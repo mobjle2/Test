@@ -213,8 +213,7 @@ function renderAdmins(){
       <b>${a.name}</b>
       <div class="stat">Hôm nay: ${td[a.key]||0} | Tổng: ${stats[a.key]||0}</div>
     </div>
-    <div class="lock ${open?"lock-open":"lock-close"}"
-      onclick="toggleLock('${a.key}',this)">
+    <div class="lock ${open?"lock-open":"lock-close"}" onclick="toggleLock('${a.key}',this)">
       <span class="lock-icon">${open?"🔓":"🔒"}</span>
     </div>
   </div>`;
