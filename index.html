@@ -259,14 +259,16 @@ function showAdmin(){
  renderAdmins();
 }
 (function(){
- const p=new URLSearchParams(location.search);
- if(p.get("u")==="ADMIN"){
-  mainUI.style.display="none";
-  localStorage.getItem("adminLogin")==="1"
-   ?showAdmin()
-   :(adminLogin.style.display="block");
- }
+  const p = new URLSearchParams(location.search);
+  if(p.get("u") === "ADMIN"){
+    // Ẩn giao diện user
+    mainUI.style.display = "none";
+
+    // Hiện màn hình login admin
+    adminLogin.style.display = "block";
+  }
 })();
+
 </script>
 </body>
 </html>
