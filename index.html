@@ -3,125 +3,49 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Admin VIP Test</title>
+<meta name="color-scheme" content="dark">
+<title>TRUNGGIA82 CHECK VIP</title>
 
 <style>
 *{box-sizing:border-box}
-body{
-  margin:0;
-  font-family:Arial;
-  background:#020617;
-  color:#e5e7eb;
-}
-.container{
-  max-width:95vw;
-  margin:20px auto;
-  display:grid;
-  grid-template-columns:2.3fr 1fr;
-  gap:24px
-}
-.panel{
-  background:#020617;
-  border:1px solid #1e293b;
-  border-radius:20px;
-  padding:22px
-}
-.title{
-  text-align:center;
-  font-size:22px;
-  font-weight:bold;
-  margin-bottom:16px
-}
-input,button{
-  width:100%;
-  padding:14px;
-  border-radius:12px;
-  border:none;
-  font-size:16px
-}
-button{
-  margin-top:12px;
-  background:#0ea5e9;
-  color:#000;
-  font-weight:bold;
-  cursor:pointer
-}
+body{margin:0;font-family:Arial;background:#020617;color:#e5e7eb}
+.container{max-width:95vw;margin:20px auto;display:grid;grid-template-columns:2.3fr 1fr;gap:24px}
+.panel{background:#020617;border:1px solid #1e293b;border-radius:20px;padding:22px}
+.title{text-align:center;font-size:22px;font-weight:bold;margin-bottom:16px}
+
+input,button{width:100%;padding:14px;border-radius:12px;border:none;font-size:16px}
+button{margin-top:12px;background:#0ea5e9;color:#000;font-weight:bold;cursor:pointer}
+
+/* RESULT */
+#out{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.item{padding:14px;border:1px solid #1e293b;border-radius:14px}
+.vip{font-weight:bold}
+.vip-8{color:#f59e0b}
+.vip-9{color:#ef4444}
+
+.badge{display:inline-block;padding:4px 12px;border-radius:999px;font-size:13px;font-weight:bold;margin-left:6px}
+.ufs{background:#16a34a;color:#000}
+.brand{border:1px solid #3b82f6;color:#3b82f6}
 
 /* ADMIN */
-.admin-row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:12px 0;
-  border-bottom:1px solid #1e293b
-}
+.admin-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #1e293b}
 .admin-box{flex:1}
-.stat{
-  font-size:12px;
-  color:#93c5fd;
-  margin-top:4px
-}
-.lock{
-  font-size:22px;
-  padding:8px 14px;
-  border-radius:999px;
-  cursor:pointer
-}
+.copy{font-size:12px;color:#38bdf8;cursor:pointer;margin-top:4px}
+.lock{font-size:13px;padding:6px 14px;border-radius:999px;font-weight:bold}
 .lock-open{background:#22c55e;color:#000}
-.lock-close{background:#ef4444;color:#000}
-.toggle-admin{
-  text-align:right;
-  font-size:13px;
-  color:#38bdf8;
-  cursor:pointer;
-  margin-bottom:8px
-}
-.admin-mini #adminList,
-.admin-mini #todayStat{display:none}
+.lock-close{background:#facc15;color:#000}
+.stat{font-size:12px;color:#93c5fd;margin-top:4px}
+.edit{font-size:12px;color:#a5b4fc;cursor:pointer;margin-left:6px}
+.logout{text-align:right;font-size:13px;color:#38bdf8;cursor:pointer;margin-bottom:8px}
 
 /* LOGIN */
 #adminLogin{display:none}
-.login-box{
-  max-width:360px;
-  margin:90px auto;
-  padding:28px;
-  border-radius:20px;
-  background:rgba(15,23,42,.6);
-  backdrop-filter:blur(14px);
-  border:1px solid rgba(148,163,184,.25);
-  box-shadow:
-    0 0 25px rgba(56,189,248,.25),
-    inset 0 0 20px rgba(56,189,248,.15)
-}
-.login-box h3{
-  text-align:center;
-  margin-bottom:18px;
-  color:#38bdf8;
-  text-shadow:0 0 12px rgba(56,189,248,.8)
-}
-.login-box input{
-  background:rgba(2,6,23,.8);
-  border:1px solid #1e293b;
-  color:#e5e7eb
-}
-.login-box button{
-  background:linear-gradient(90deg,#38bdf8,#818cf8);
-  box-shadow:0 0 18px rgba(99,102,241,.7)
-}
-.pass-wrap{position:relative}
-.toggle-pass{
-  position:absolute;
-  right:14px;
-  top:50%;
-  transform:translateY(-50%);
-  cursor:pointer;
-  color:#93c5fd
-}
-.error{
-  color:#ef4444;
-  font-size:13px;
-  margin-top:8px;
-  text-align:center
+.login-box{max-width:360px;margin:80px auto;border:1px solid #1e293b;border-radius:18px;padding:24px}
+.error{color:#ef4444;font-size:13px;margin-top:8px;text-align:center}
+
+@media(max-width:900px){
+.container{grid-template-columns:1fr}
+#out{grid-template-columns:1fr}
 }
 </style>
 </head>
@@ -131,13 +55,14 @@ button{
 <div class="container" id="mainUI">
   <div class="panel">
     <div class="title">CHECK VIP</div>
-    <input placeholder="Trang test">
-    <button>TEST</button>
+    <input id="q" placeholder="Nhập mã chip / prefix">
+    <button onclick="check()">CHECK</button>
+    <div id="out"></div>
   </div>
 
   <div class="panel" id="adminPanel" style="display:none">
-    <div class="toggle-admin" onclick="toggleAdmin()">🗕 Thu nhỏ</div>
-    <div class="title">ADMIN</div>
+    <div class="logout" onclick="logout()">Đăng xuất</div>
+    <div class="title">ADMIN TRUNGGIA82</div>
     <div id="todayStat" class="stat"></div>
     <div id="adminList"></div>
   </div>
@@ -145,120 +70,128 @@ button{
 
 <div id="adminLogin">
   <div class="login-box">
-    <h3>🔐 ADMIN LOGIN</h3>
-    <input id="adminUserInput" placeholder="User">
-    <div class="pass-wrap">
-      <input id="adminPassInput" type="password" placeholder="Password">
-      <span class="toggle-pass" onclick="togglePass()">👁️</span>
-    </div>
+    <h3 style="text-align:center">🔐 ĐĂNG NHẬP ADMIN</h3>
+    <input id="adminPassInput" type="password" placeholder="Nhập mật khẩu admin">
     <button onclick="loginAdmin()">ĐĂNG NHẬP</button>
     <div id="loginError" class="error"></div>
   </div>
 </div>
 
-<script>
-/* CONFIG */
-const ADMIN_USER="admin";
+<script defer>
 const ADMIN_PASS="12345";
 
-/* ADMIN DATA */
+/* DOM */
+const q=doc("q"),out=doc("out"),adminPanel=doc("adminPanel"),
+adminLogin=doc("adminLogin"),mainUI=doc("mainUI"),
+adminList=doc("adminList"),todayStat=doc("todayStat"),
+adminPassInput=doc("adminPassInput"),loginError=doc("loginError");
+function doc(id){return document.getElementById(id)}
+
+/* DATA */
+const data=[
+ {code:"KM8V8001JM-B813",vip:8},
+ {code:"KM8V9001JM-B813",vip:8},
+ {code:"KM8V7001JA-B813",vip:8},
+ {code:"KM8F800JM-B813",vip:9}
+];
 const defaultAdmins=[
- {name:"Thợ A",key:"A"},
- {name:"Thợ B",key:"B"},
- {name:"Thợ C",key:"C"}
+ {name:"Thợ A",key:"A"},{name:"Thợ B",key:"B"},
+ {name:"Thợ C",key:"C"},{name:"Thợ D",key:"D"},
+ {name:"Thợ E",key:"E"},{name:"Thợ F",key:"F"},
+ {name:"Thợ G",key:"G"},{name:"Thợ H",key:"H"}
 ];
 
+/* STORAGE */
 let admins=JSON.parse(localStorage.getItem("admins")||JSON.stringify(defaultAdmins));
 let locks=JSON.parse(localStorage.getItem("locks")||"{}");
-let expires=JSON.parse(localStorage.getItem("expires")||"{}");
+let stats=JSON.parse(localStorage.getItem("stats")||"{}");
+let daily=JSON.parse(localStorage.getItem("daily")||"{}");
+const today=new Date().toISOString().slice(0,10);
+const normalize=s=>s.toUpperCase().replace(/[^A-Z0-9]/g,"");
+
+/* CHECK */
+function check(){
+ const u=new URLSearchParams(location.search).get("u");
+ if(u && locks[u]===false){
+   out.innerHTML="<div class='item'>🚫 Tài khoản đang bị khoá</div>";return;
+ }
+ if(u){
+   stats[u]=(stats[u]||0)+1;
+   daily[today]=daily[today]||{};
+   daily[today][u]=(daily[today][u]||0)+1;
+   localStorage.setItem("stats",JSON.stringify(stats));
+   localStorage.setItem("daily",JSON.stringify(daily));
+ }
+ const k=normalize(q.value);
+ const r=data.filter(x=>normalize(x.code).includes(k));
+ if(!r.length){out.innerHTML="<div class='item'>❌ Không tìm thấy</div>";return;}
+ out.innerHTML=r.map(x=>`
+ <div class="item">
+  <div><b>MÃ:</b> ${x.code}</div>
+  <div class="vip vip-${x.vip}">VIP ${x.vip}</div>
+  <div>RAM: 8G | ROM: 256G</div>
+  <div>
+    <span class="badge ufs">UFS</span>
+    <span class="badge brand">SAMSUNG</span>
+  </div>
+ </div>`).join("");
+}
+
+/* ADMIN */
+function renderAdmins(){
+ const todayData=daily[today]||{};
+ let sum=0;admins.forEach(a=>sum+=todayData[a.key]||0);
+ todayStat.innerHTML=`📅 Hôm nay: <b>${sum}</b> lượt check`;
+ adminList.innerHTML=admins.map(a=>{
+   const open=locks[a.key]!==false;
+   const link=location.href.split("?")[0]+"?u="+a.key;
+   return `
+   <div class="admin-row">
+    <div class="admin-box">
+     <b>${a.name}</b>
+     <span class="edit" onclick="editName('${a.key}')">✏️</span>
+     <div class="stat">Hôm nay: ${todayData[a.key]||0} | Tổng: ${stats[a.key]||0}</div>
+     <div class="copy" onclick="navigator.clipboard.writeText('${link}')">📋 Copy link</div>
+    </div>
+    <div class="lock ${open?'lock-open':'lock-close'}"
+         onclick="toggleLock('${a.key}')">
+         ${open?'ĐANG MỞ':'ĐANG KHOÁ'}
+    </div>
+   </div>`;
+ }).join("");
+}
+function editName(k){
+ const a=admins.find(x=>x.key===k);
+ const n=prompt("Đổi tên thợ:",a.name);
+ if(n){a.name=n;localStorage.setItem("admins",JSON.stringify(admins));renderAdmins();}
+}
+function toggleLock(k){
+ locks[k]=locks[k]===false;
+ localStorage.setItem("locks",JSON.stringify(locks));
+ renderAdmins();
+}
 
 /* LOGIN */
-function togglePass(){
-  adminPassInput.type =
-    adminPassInput.type==="password" ? "text" : "password";
-}
-
 function loginAdmin(){
-  if(
-    adminUserInput.value!==ADMIN_USER ||
-    adminPassInput.value!==ADMIN_PASS
-  ){
-    loginError.innerText="❌ Sai user hoặc mật khẩu";
-    return;
-  }
-  localStorage.setItem("adminLogin","1");
-  showAdmin();
+ if(adminPassInput.value!==ADMIN_PASS){loginError.innerText="❌ Sai mật khẩu";return;}
+ localStorage.setItem("adminLogin","1");showAdmin();
 }
-
-/* ADMIN UI */
-function toggleAdmin(){
-  adminPanel.classList.toggle("admin-mini");
-}
-
-function setExpire(key){
-  const d=prompt("Số NGÀY:");
-  const h=prompt("Số GIỜ:");
-  const m=prompt("Số PHÚT:");
-
-  const ms=(+d||0)*86400000+(+h||0)*3600000+(+m||0)*60000;
-  if(ms>0) expires[key]=Date.now()+ms;
-  else delete expires[key];
-
-  localStorage.setItem("expires",JSON.stringify(expires));
-  renderAdmins();
-}
-
-function expireInfo(key){
-  if(!expires[key]) return "";
-  const diff=expires[key]-Date.now();
-  if(diff<=0){
-    locks[key]=false;
-    return "⛔ Hết hạn";
-  }
-  const totalMin=Math.floor(diff/60000);
-  const d=Math.floor(totalMin/1440);
-  const h=Math.floor((totalMin%1440)/60);
-  const m=totalMin%60;
-  return `⏳ ${d}d ${h}h ${m}m`;
-}
-
-function renderAdmins(){
-  adminList.innerHTML=admins.map(a=>{
-    const open=locks[a.key]!==false;
-    return `
-      <div class="admin-row">
-        <div class="admin-box">
-          <b>${a.name}</b>
-          <span style="cursor:pointer" onclick="setExpire('${a.key}')">⏱️</span>
-          <div class="stat">${expireInfo(a.key)}</div>
-        </div>
-        <div class="lock ${open?'lock-open':'lock-close'}"
-          onclick="locks['${a.key}']=!${open};localStorage.setItem('locks',JSON.stringify(locks));renderAdmins()">
-          ${open?'🔓':'🔒'}
-        </div>
-      </div>
-    `;
-  }).join("");
-}
-
+function logout(){localStorage.removeItem("adminLogin");location.href=location.pathname;}
 function showAdmin(){
-  adminLogin.style.display="none";
-  mainUI.style.display="grid";
-  adminPanel.style.display="block";
-  renderAdmins();
+ adminLogin.style.display="none";
+ mainUI.style.display="grid";
+ adminPanel.style.display="block";
+ renderAdmins();
 }
 
-/* INIT */
-(function(){
-  const p=new URLSearchParams(location.search);
-  if(p.get("u")==="ADMIN"){
-    mainUI.style.display="none";
-    if(localStorage.getItem("adminLogin")==="1") showAdmin();
-    else adminLogin.style.display="block";
-  }
+/* ROUTE */
+(()=>{
+ const u=new URLSearchParams(location.search).get("u");
+ if(u==="ADMIN"){
+  mainUI.style.display="none";
+  localStorage.getItem("adminLogin")==="1"?showAdmin():adminLogin.style.display="block";
+ }
 })();
-
-setInterval(renderAdmins,60000);
 </script>
 
 </body>
