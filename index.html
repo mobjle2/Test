@@ -3,175 +3,107 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>ADMIN SWITCH PRO</title>
-
+<title>CHECK VIP + ADMIN</title>
 <style>
-body{
-  margin:0;
-  font-family:Arial,Helvetica,sans-serif;
-  background:#020617;
-  color:#e5e7eb;
-}
+body{margin:0;font-family:Arial;background:#020617;color:#e5e7eb}
+.container{max-width:1000px;margin:20px auto;display:grid;grid-template-columns:2fr 1fr;gap:20px}
+.panel{border:1px solid #1e293b;border-radius:16px;padding:20px}
+.title{text-align:center;font-size:20px;font-weight:bold;margin-bottom:16px}
+input,button{width:100%;padding:12px;border-radius:10px;border:none}
+button{margin-top:10px;background:#0ea5e9;font-weight:bold}
+.item{padding:10px 0;border-bottom:1px solid #1e293b}
 
-.panel{
-  max-width:460px;
-  margin:60px auto;
-  background:#020617;
-  border:1px solid #1e293b;
-  border-radius:16px;
-  padding:20px;
-}
+.admin-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #1e293b}
+.small{font-size:12px;color:#9ca3af}
 
-.title{
-  text-align:center;
-  font-size:20px;
-  font-weight:bold;
-  margin-bottom:20px;
-}
-
-.row{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  padding:14px 0;
-  border-bottom:1px solid #1e293b;
-}
-
-.small{
-  font-size:12px;
-  color:#9ca3af;
-}
-
-/* ===== SWITCH ===== */
-.switch{
-  position:relative;
-  width:72px;
-  height:32px;
-  border-radius:999px;
-  transition:background 0.25s ease;
-}
-
-/* ADMIN mới click được */
-.switch.admin{
-  cursor:pointer;
-}
-.switch.viewer{
-  opacity:.5;
-}
-
-/* LOCK */
-.switch.locked{
-  background:#facc15;
-}
-/* OPEN */
-.switch.unlocked{
-  background:#22c55e;
-}
-
-.switch::after{
-  content:"";
-  position:absolute;
-  top:3px;
-  left:3px;
-  width:26px;
-  height:26px;
-  background:#020617;
-  border-radius:50%;
-  transition:transform .25s cubic-bezier(.4,0,.2,1);
-}
-.switch.unlocked::after{
-  transform:translateX(40px);
-}
-
-/* RUNG */
-@keyframes shake{
-  0%{transform:translateX(0)}
-  25%{transform:translateX(-2px)}
-  50%{transform:translateX(2px)}
-  100%{transform:translateX(0)}
-}
-.switch.shake{
-  animation:shake .25s;
-}
+/* SWITCH */
+.switch{position:relative;width:72px;height:32px;border-radius:999px;transition:.25s}
+.switch.admin{cursor:pointer}
+.switch.viewer{opacity:.5}
+.switch.locked{background:#facc15}
+.switch.unlocked{background:#22c55e}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;background:#020617;border-radius:50%;transition:.25s}
+.switch.unlocked::after{transform:translateX(40px)}
+@keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-2px)}50%{transform:translateX(2px)}100%{transform:translateX(0)}}
+.switch.shake{animation:shake .25s}
 </style>
 </head>
-
 <body>
+
+<div class="container">
+<div class="panel">
+  <div class="title">CHECK VIP</div>
+  <input id="q" placeholder="Nhập mã">
+  <button onclick="check()">CHECK</button>
+  <div id="out"></div>
+</div>
 
 <div class="panel">
   <div class="title">ADMIN PANEL</div>
-  <div id="list"></div>
+  <div id="adminList"></div>
+</div>
 </div>
 
 <script>
-const STORAGE_KEY = "switch_state_v1";
-
-/* ===== DATA ===== */
-let admins = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
-  {name:"Thợ A", key:"A", lock:false, count:0, last:null},
-  {name:"Thợ B", key:"B", lock:true,  count:0, last:null},
-  {name:"Thợ C", key:"C", lock:false, count:0, last:null}
+const data=[
+ {code:"KM8V8001JM-B813",vip:"VIP 8"},
+ {code:"KM8F800JM-B813",vip:"VIP 9"}
 ];
 
-function save(){
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(admins));
+function normalize(s){return s.toUpperCase().replace(/[^A-Z0-9]/g,"")}
+function check(){
+ const k=normalize(q.value);
+ const r=data.filter(x=>normalize(x.code).includes(k));
+ out.innerHTML=r.length?r.map(x=>`<div class='item'>${x.code} - ${x.vip}</div>`).join(""):"❌ Không tìm thấy";
 }
 
-/* ===== ROUTE ===== */
-const p = new URLSearchParams(location.search);
-const u = p.get("u");
-const isAdmin = (u === "ADMIN");
+/* ADMIN */
+const KEY="admin_state";
+let admins=JSON.parse(localStorage.getItem(KEY))||[
+{name:"Thợ A",key:"A",lock:false,count:0,last:null},
+{name:"Thợ B",key:"B",lock:true,count:0,last:null}
+];
 
-/* ===== WORKER ACCESS ===== */
+const p=new URLSearchParams(location.search);
+const u=p.get("u");
+const isAdmin=u==="ADMIN";
+
+function save(){localStorage.setItem(KEY,JSON.stringify(admins))}
+
 if(u && !isAdmin){
-  const a = admins.find(x=>x.key===u);
-  if(a){
-    a.count++;
-    a.last = new Date().toLocaleString("vi-VN");
-    save();
-
-    if(a.lock){
-      document.body.innerHTML = `
-        <h2 style="text-align:center;color:#facc15;margin-top:120px">
-          🔒 TÀI KHOẢN ĐÃ BỊ KHÓA
-        </h2>`;
-    }
-  }
-}
-
-/* ===== RENDER ===== */
-function render(){
-  list.innerHTML = admins.map((a,i)=>`
-    <div class="row">
-      <div>
-        <b>${a.name}</b>
-        <div class="small">👁 ${a.count} lần</div>
-        ${a.last ? `<div class="small">🕒 ${a.last}</div>` : ""}
-      </div>
-
-      <div class="switch ${a.lock?"locked":"unlocked"} ${isAdmin?"admin":"viewer"}"
-           ${isAdmin ? `onclick="toggle(${i}, this)"` : ""}>
-      </div>
-    </div>
-  `).join("");
-}
-
-/* ===== TOGGLE (ADMIN ONLY) ===== */
-function toggle(i, el){
-  if(!isAdmin) return;
-
-  admins[i].lock = !admins[i].lock;
+ const a=admins.find(x=>x.key===u);
+ if(a){
+  a.count++;
+  a.last=new Date().toLocaleString("vi-VN");
   save();
-
-  el.classList.remove("shake");
-  void el.offsetWidth;
-  el.classList.add("shake");
-
-  render();
+  if(a.lock){
+   document.body.innerHTML="<h2 style='text-align:center;color:#facc15;margin-top:120px'>🔒 TÀI KHOẢN ĐÃ BỊ KHÓA</h2>";
+  }
+ }
 }
 
-render();
-</script>
+function renderAdmins(){
+ adminList.innerHTML=admins.map((a,i)=>`
+  <div class="admin-row">
+   <div>
+    <b>${a.name}</b>
+    <div class="small">👁 ${a.count} lần</div>
+    ${a.last?`<div class="small">🕒 ${a.last}</div>`:""}
+   </div>
+   <div class="switch ${a.lock?"locked":"unlocked"} ${isAdmin?"admin":"viewer"}"
+        ${isAdmin?`onclick="toggle(${i},this)"`:""}></div>
+  </div>
+ `).join("");
+}
 
+function toggle(i,el){
+ admins[i].lock=!admins[i].lock;
+ save();
+ el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake");
+ renderAdmins();
+}
+
+renderAdmins();
+</script>
 </body>
 </html>
