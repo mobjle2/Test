@@ -3,323 +3,174 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CHECK VIP – ADMIN PRO</title>
+<title>ADMIN SWITCH PRO</title>
 
 <style>
-*{box-sizing:border-box}
 body{
   margin:0;
   font-family:Arial,Helvetica,sans-serif;
   background:#020617;
-  color:#e5e7eb
-}
-
-.container{
-  max-width:95vw;
-  margin:20px auto;
-  display:grid;
-  grid-template-columns:2.3fr 1fr;
-  gap:24px;
+  color:#e5e7eb;
 }
 
 .panel{
+  max-width:460px;
+  margin:60px auto;
   background:#020617;
   border:1px solid #1e293b;
-  border-radius:20px;
-  padding:22px;
+  border-radius:16px;
+  padding:20px;
 }
 
 .title{
   text-align:center;
-  font-size:22px;
+  font-size:20px;
   font-weight:bold;
-  margin-bottom:16px
+  margin-bottom:20px;
 }
 
-input,select,button{
-  width:100%;
-  padding:14px;
-  border-radius:12px;
-  border:none;
-  font-size:16px;
-}
-
-button{
-  margin-top:12px;
-  background:#0ea5e9;
-  color:#000;
-  font-weight:bold;
-  cursor:pointer
-}
-
-.item{
-  padding:14px 0;
-  border-bottom:1px solid #1e293b
-}
-
-/* ===== ADMIN ===== */
-.admin-row{
+.row{
   display:flex;
   justify-content:space-between;
   align-items:center;
-  padding:12px 0;
-  border-bottom:1px solid #1e293b
-}
-
-.admin-box{
-  display:flex;
-  flex-direction:column;
-  gap:4px
-}
-
-.lock{
-  font-size:22px;
-  cursor:pointer;
-  line-height:1;
-}
-
-/* KHÓA = VÀNG */
-.lock.locked{
-  color:#facc15 !important;
-}
-
-/* MỞ = XANH */
-.lock.unlocked{
-  color:#22c55e !important;
-}
-
-/* COPY */
-.copy{
-  font-size:16px;
-  color:#38bdf8;
-  cursor:pointer;
-}
-.copy.disabled{
-  color:#475569;
-  cursor:not-allowed;
-  pointer-events:none;
-}
-
-/* LOGIN */
-#loginScreen{
-  position:fixed;
-  inset:0;
-  background:#020617;
-  display:none;
-}
-
-.login-box{
-  max-width:360px;
-  margin:120px auto;
-  border:1px solid #1e293b;
-  border-radius:20px;
-  padding:28px;
-  text-align:center;
-}
-
-.login-box input{
-  margin-bottom:12px;
-  background:#020617;
-  border:1px solid #1e293b;
-  color:#e5e7eb;
-}
-
-.error{
-  color:#ef4444;
-  margin-top:10px;
-  display:none;
+  padding:14px 0;
+  border-bottom:1px solid #1e293b;
 }
 
 .small{
   font-size:12px;
   color:#9ca3af;
 }
+
+/* ===== SWITCH ===== */
+.switch{
+  position:relative;
+  width:72px;
+  height:32px;
+  border-radius:999px;
+  transition:background 0.25s ease;
+}
+
+/* ADMIN mới click được */
+.switch.admin{
+  cursor:pointer;
+}
+.switch.viewer{
+  opacity:.5;
+}
+
+/* LOCK */
+.switch.locked{
+  background:#facc15;
+}
+/* OPEN */
+.switch.unlocked{
+  background:#22c55e;
+}
+
+.switch::after{
+  content:"";
+  position:absolute;
+  top:3px;
+  left:3px;
+  width:26px;
+  height:26px;
+  background:#020617;
+  border-radius:50%;
+  transition:transform .25s cubic-bezier(.4,0,.2,1);
+}
+.switch.unlocked::after{
+  transform:translateX(40px);
+}
+
+/* RUNG */
+@keyframes shake{
+  0%{transform:translateX(0)}
+  25%{transform:translateX(-2px)}
+  50%{transform:translateX(2px)}
+  100%{transform:translateX(0)}
+}
+.switch.shake{
+  animation:shake .25s;
+}
 </style>
 </head>
 
 <body>
 
-<!-- ===== LOGIN ADMIN ===== -->
-<div id="loginScreen">
-  <div class="login-box">
-    <h2>🔐 ADMIN LOGIN</h2>
-    <input id="adminUser" placeholder="User">
-    <input id="adminPass" type="password" placeholder="Password">
-    <button onclick="loginAdmin()">Đăng nhập</button>
-    <div id="loginError" class="error">❌ Sai user hoặc mật khẩu</div>
-  </div>
+<div class="panel">
+  <div class="title">ADMIN PANEL</div>
+  <div id="list"></div>
 </div>
-
-<div class="container">
-
-  <!-- ===== CHECK ===== -->
-  <div class="panel">
-    <div class="title">CHECK VIP</div>
-
-    <select id="vipFilter" onchange="check()">
-      <option value="">-- TẤT CẢ VIP --</option>
-    </select>
-
-    <div id="vipStats" class="small" style="margin:6px 0"></div>
-
-    <input id="q" placeholder="Nhập mã chip / prefix">
-    <button onclick="check()">CHECK</button>
-    <div id="out"></div>
-  </div>
-
-  <!-- ===== ADMIN ===== -->
-  <div class="panel" id="adminPanel" style="display:none">
-    <div class="title">ADMIN PANEL</div>
-    <div id="adminList"></div>
-  </div>
-
-</div>
-
-<!-- ===== LOAD DATA ===== -->
-<script src="data.js"></script>
 
 <script>
-/* ===== CONFIG ===== */
-const ADMIN_USER = "admin";
-const ADMIN_PASS = "12345";
+const STORAGE_KEY = "switch_state_v1";
 
-/* ===== WORKERS ===== */
-let admins = JSON.parse(localStorage.getItem("admins")) || [
- {name:"Thợ A",key:"A",lock:false,count:0,last:null},
- {name:"Thợ B",key:"B",lock:true,count:0,last:null},
- {name:"Thợ C",key:"C",lock:false,count:0,last:null}
+/* ===== DATA ===== */
+let admins = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [
+  {name:"Thợ A", key:"A", lock:false, count:0, last:null},
+  {name:"Thợ B", key:"B", lock:true,  count:0, last:null},
+  {name:"Thợ C", key:"C", lock:false, count:0, last:null}
 ];
 
-/* ===== CHECK ===== */
-function normalize(s){
-  return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
+function save(){
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(admins));
 }
 
-function initVipFilter(){
-  const vipSet = [...new Set(data.map(x=>x.vip))];
-  vipFilter.innerHTML =
-    `<option value="">-- TẤT CẢ VIP --</option>` +
-    vipSet.map(v=>`<option value="${v}">${v}</option>`).join("");
-}
+/* ===== ROUTE ===== */
+const p = new URLSearchParams(location.search);
+const u = p.get("u");
+const isAdmin = (u === "ADMIN");
 
-function renderVipStats(list){
-  const stats = {};
-  list.forEach(x=>{
-    stats[x.vip]=(stats[x.vip]||0)+1;
-  });
-  vipStats.innerHTML = Object.entries(stats)
-    .map(([v,c])=>`• ${v}: <b>${c}</b> mã`)
-    .join("<br>");
-}
+/* ===== WORKER ACCESS ===== */
+if(u && !isAdmin){
+  const a = admins.find(x=>x.key===u);
+  if(a){
+    a.count++;
+    a.last = new Date().toLocaleString("vi-VN");
+    save();
 
-function check(){
-  const key = normalize(q.value);
-  const vipSel = vipFilter.value;
-  let r = data;
-
-  if(key) r = r.filter(x=>x.norm.includes(key));
-  if(vipSel) r = r.filter(x=>x.vip===vipSel);
-
-  out.innerHTML="";
-  if(!r.length){
-    vipStats.innerHTML="";
-    out.innerHTML="<div class='item'>❌ Không tìm thấy</div>";
-    return;
+    if(a.lock){
+      document.body.innerHTML = `
+        <h2 style="text-align:center;color:#facc15;margin-top:120px">
+          🔒 TÀI KHOẢN ĐÃ BỊ KHÓA
+        </h2>`;
+    }
   }
+}
 
-  renderVipStats(r);
+/* ===== RENDER ===== */
+function render(){
+  list.innerHTML = admins.map((a,i)=>`
+    <div class="row">
+      <div>
+        <b>${a.name}</b>
+        <div class="small">👁 ${a.count} lần</div>
+        ${a.last ? `<div class="small">🕒 ${a.last}</div>` : ""}
+      </div>
 
-  out.innerHTML = r.map(x=>`
-    <div class="item">
-      <div><b>MÃ:</b> ${x.code}</div>
-      <div><b>VIP:</b> ${x.vip}</div>
-      <div><b>CHIP:</b> ${x.chip}</div>
+      <div class="switch ${a.lock?"locked":"unlocked"} ${isAdmin?"admin":"viewer"}"
+           ${isAdmin ? `onclick="toggle(${i}, this)"` : ""}>
+      </div>
     </div>
   `).join("");
 }
 
-/* ===== ADMIN ===== */
-function renderAdmins(){
-  adminList.innerHTML = admins.map((a,i)=>{
-    const link = location.origin + location.pathname + "?u=" + a.key;
-    return `
-    <div class="admin-row">
-      <div class="admin-box">
-        <b>${a.name}</b>
-        <div class="small">👁 ${a.count} lần</div>
-        ${a.last?`<div class="small">🕒 ${a.last}</div>`:""}
-        <div class="copy ${a.lock?"disabled":""}"
-             id="copy-${i}"
-             onclick="${a.lock?"":`copyLink('${link}',${i})`}">
-          📋
-        </div>
-      </div>
+/* ===== TOGGLE (ADMIN ONLY) ===== */
+function toggle(i, el){
+  if(!isAdmin) return;
 
-      <div class="lock ${a.lock?"locked":"unlocked"}"
-           onclick="toggleLock(${i})">
-        ${a.lock?"🔒":"🔓"}
-      </div>
-    </div>`;
-  }).join("");
-}
-
-function toggleLock(i){
   admins[i].lock = !admins[i].lock;
-  localStorage.setItem("admins",JSON.stringify(admins));
-  renderAdmins();
+  save();
+
+  el.classList.remove("shake");
+  void el.offsetWidth;
+  el.classList.add("shake");
+
+  render();
 }
 
-function copyLink(link,i){
-  navigator.clipboard.writeText(link);
-  const el=document.getElementById("copy-"+i);
-  el.innerHTML="✔";
-  el.style.color="#22c55e";
-  setTimeout(()=>{
-    el.innerHTML="📋";
-    el.style.color="#38bdf8";
-  },1200);
-}
-
-/* ===== LOGIN ===== */
-function loginAdmin(){
-  if(adminUser.value!==ADMIN_USER || adminPass.value!==ADMIN_PASS){
-    loginError.style.display="block";
-    return;
-  }
-  loginScreen.style.display="none";
-  adminPanel.style.display="block";
-  renderAdmins();
-}
-
-/* ===== ROUTE ===== */
-(function(){
-  const p=new URLSearchParams(location.search);
-  const u=p.get("u");
-
-  if(u==="ADMIN"){
-    loginScreen.style.display="block";
-    initVipFilter();
-    return;
-  }
-
-  if(u){
-    const a=admins.find(x=>x.key===u);
-    if(a){
-      a.count++;
-      a.last=new Date().toLocaleString("vi-VN");
-      localStorage.setItem("admins",JSON.stringify(admins));
-
-      if(a.lock){
-        document.body.innerHTML=`
-          <h2 style="color:#facc15;text-align:center;margin-top:120px">
-            🔒 TÀI KHOẢN ĐÃ BỊ KHÓA
-          </h2>`;
-      }
-    }
-  }
-
-  initVipFilter();
-})();
+render();
 </script>
 
 </body>
