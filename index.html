@@ -3,34 +3,56 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CHECK VIP + ADMIN</title>
+<title>CHECK VIP + ADMIN PRO</title>
 <style>
 body{margin:0;font-family:Arial;background:#020617;color:#e5e7eb}
-.container{max-width:1000px;margin:20px auto;display:grid;grid-template-columns:2fr 1fr;gap:20px}
+.container{max-width:1100px;margin:20px auto;display:grid;grid-template-columns:2fr 1fr;gap:20px}
 .panel{border:1px solid #1e293b;border-radius:16px;padding:20px}
 .title{text-align:center;font-size:20px;font-weight:bold;margin-bottom:16px}
 input,button{width:100%;padding:12px;border-radius:10px;border:none}
 button{margin-top:10px;background:#0ea5e9;font-weight:bold}
 .item{padding:10px 0;border-bottom:1px solid #1e293b}
-
-.admin-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #1e293b}
 .small{font-size:12px;color:#9ca3af}
 
+/* ADMIN ROW */
+.admin-row{display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #1e293b}
+.copy{cursor:pointer;color:#38bdf8;font-size:14px}
+.copy.disabled{opacity:.4;pointer-events:none}
+
 /* SWITCH */
-.switch{position:relative;width:72px;height:32px;border-radius:999px;transition:.25s}
+.switch{position:relative;width:56px;height:26px;border-radius:999px;transition:.25s}
 .switch.admin{cursor:pointer}
 .switch.viewer{opacity:.5}
 .switch.locked{background:#facc15}
 .switch.unlocked{background:#22c55e}
-.switch::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;background:#020617;border-radius:50%;transition:.25s}
-.switch.unlocked::after{transform:translateX(40px)}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;background:#020617;border-radius:50%;transition:.25s}
+.switch.unlocked::after{transform:translateX(30px)}
 @keyframes shake{0%{transform:translateX(0)}25%{transform:translateX(-2px)}50%{transform:translateX(2px)}100%{transform:translateX(0)}}
 .switch.shake{animation:shake .25s}
+
+/* LOGIN */
+#login{position:fixed;inset:0;background:#020617;display:none}
+.login-box{max-width:360px;margin:120px auto;border:1px solid #1e293b;border-radius:16px;padding:20px;text-align:center}
+.error{color:#ef4444;display:none}
+
+/* COLLAPSE */
+.collapse{cursor:pointer;font-size:13px;color:#38bdf8;text-align:right;margin-bottom:8px}
 </style>
 </head>
 <body>
 
+<div id="login">
+  <div class="login-box">
+    <h3>🔐 ADMIN LOGIN</h3>
+    <input id="user" placeholder="User">
+    <input id="pass" type="password" placeholder="Password">
+    <button onclick="login()">Đăng nhập</button>
+    <div id="err" class="error">❌ Sai user hoặc mật khẩu</div>
+  </div>
+</div>
+
 <div class="container">
+
 <div class="panel">
   <div class="title">CHECK VIP</div>
   <input id="q" placeholder="Nhập mã">
@@ -38,18 +60,24 @@ button{margin-top:10px;background:#0ea5e9;font-weight:bold}
   <div id="out"></div>
 </div>
 
-<div class="panel">
+<div class="panel" id="adminPanel" style="display:none">
   <div class="title">ADMIN PANEL</div>
+  <div class="collapse" onclick="toggleAdmin()">Thu nhỏ / Mở</div>
   <div id="adminList"></div>
 </div>
+
 </div>
 
 <script>
+/* CONFIG */
+const ADMIN_USER="admin";
+const ADMIN_PASS="12345";
+
+/* CHECK DATA */
 const data=[
  {code:"KM8V8001JM-B813",vip:"VIP 8"},
  {code:"KM8F800JM-B813",vip:"VIP 9"}
 ];
-
 function normalize(s){return s.toUpperCase().replace(/[^A-Z0-9]/g,"")}
 function check(){
  const k=normalize(q.value);
@@ -57,53 +85,82 @@ function check(){
  out.innerHTML=r.length?r.map(x=>`<div class='item'>${x.code} - ${x.vip}</div>`).join(""):"❌ Không tìm thấy";
 }
 
-/* ADMIN */
-const KEY="admin_state";
+/* ADMIN DATA */
+const KEY="admin_state_v2";
 let admins=JSON.parse(localStorage.getItem(KEY))||[
 {name:"Thợ A",key:"A",lock:false,count:0,last:null},
-{name:"Thợ B",key:"B",lock:true,count:0,last:null}
+{name:"Thợ B",key:"B",lock:true,count:0,last:null},
+{name:"Thợ C",key:"C",lock:false,count:0,last:null}
 ];
+function save(){localStorage.setItem(KEY,JSON.stringify(admins))}
 
+/* ROUTE */
 const p=new URLSearchParams(location.search);
 const u=p.get("u");
 const isAdmin=u==="ADMIN";
 
-function save(){localStorage.setItem(KEY,JSON.stringify(admins))}
-
+/* WORKER ACCESS */
 if(u && !isAdmin){
  const a=admins.find(x=>x.key===u);
  if(a){
-  a.count++;
-  a.last=new Date().toLocaleString("vi-VN");
-  save();
+  a.count++;a.last=new Date().toLocaleString("vi-VN");save();
   if(a.lock){
    document.body.innerHTML="<h2 style='text-align:center;color:#facc15;margin-top:120px'>🔒 TÀI KHOẢN ĐÃ BỊ KHÓA</h2>";
   }
  }
 }
 
+/* LOGIN */
+function login(){
+ if(user.value!==ADMIN_USER||pass.value!==ADMIN_PASS){
+  err.style.display="block";return;
+ }
+ login.style.display="none";
+ adminPanel.style.display="block";
+ renderAdmins();
+}
+
+/* ADMIN RENDER */
+let collapsed=false;
+function toggleAdmin(){
+ collapsed=!collapsed;
+ adminList.style.display=collapsed?"none":"block";
+}
+
 function renderAdmins(){
- adminList.innerHTML=admins.map((a,i)=>`
+ adminList.innerHTML=admins.map((a,i)=>{
+  const link=location.origin+location.pathname+"?u="+a.key;
+  return `
   <div class="admin-row">
-   <div>
-    <b>${a.name}</b>
-    <div class="small">👁 ${a.count} lần</div>
-    ${a.last?`<div class="small">🕒 ${a.last}</div>`:""}
-   </div>
-   <div class="switch ${a.lock?"locked":"unlocked"} ${isAdmin?"admin":"viewer"}"
-        ${isAdmin?`onclick="toggle(${i},this)"`:""}></div>
-  </div>
- `).join("");
+    <div>
+      <b>${a.name}</b>
+      <div class="small">👁 ${a.count} lần</div>
+      ${a.last?`<div class="small">🕒 ${a.last}</div>`:""}
+      <div class="copy ${a.lock?"disabled":""}" onclick="${a.lock?"":`copy('${link}',this)`}">📋</div>
+    </div>
+    <div class="switch ${a.lock?"locked":"unlocked"} admin"
+         onclick="toggle(${i},this)"></div>
+  </div>`;
+ }).join("");
 }
 
 function toggle(i,el){
- admins[i].lock=!admins[i].lock;
- save();
+ admins[i].lock=!admins[i].lock;save();
  el.classList.remove("shake");void el.offsetWidth;el.classList.add("shake");
  renderAdmins();
 }
 
-renderAdmins();
+function copy(link,el){
+ navigator.clipboard.writeText(link);
+ el.textContent="✔";
+ setTimeout(()=>el.textContent="📋",1200);
+}
+
+/* INIT */
+if(isAdmin){
+ login.style.display="block";
+}
 </script>
+
 </body>
 </html>
