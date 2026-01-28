@@ -13,6 +13,7 @@ body{
   background:#020617;
   color:#e5e7eb
 }
+
 .container{
   max-width:95vw;
   margin:20px auto;
@@ -20,25 +21,29 @@ body{
   grid-template-columns:2.3fr 1fr;
   gap:24px;
 }
+
 .panel{
   background:#020617;
   border:1px solid #1e293b;
   border-radius:20px;
   padding:22px;
 }
+
 .title{
   text-align:center;
   font-size:22px;
   font-weight:bold;
   margin-bottom:16px
 }
-input,button{
+
+input,select,button{
   width:100%;
   padding:14px;
   border-radius:12px;
   border:none;
   font-size:16px;
 }
+
 button{
   margin-top:12px;
   background:#0ea5e9;
@@ -46,12 +51,13 @@ button{
   font-weight:bold;
   cursor:pointer
 }
+
 .item{
   padding:14px 0;
   border-bottom:1px solid #1e293b
 }
 
-/* ADMIN LIST */
+/* ===== ADMIN ===== */
 .admin-row{
   display:flex;
   justify-content:space-between;
@@ -59,17 +65,28 @@ button{
   padding:12px 0;
   border-bottom:1px solid #1e293b
 }
+
 .admin-box{
   display:flex;
   flex-direction:column;
   gap:4px
 }
+
 .lock{
   font-size:22px;
   cursor:pointer;
+  line-height:1;
 }
-.lock.locked{color:#facc15}     /* vàng */
-.lock.unlocked{color:#22c55e}   /* xanh */
+
+/* KHÓA = VÀNG */
+.lock.locked{
+  color:#facc15 !important;
+}
+
+/* MỞ = XANH */
+.lock.unlocked{
+  color:#22c55e !important;
+}
 
 /* COPY */
 .copy{
@@ -90,6 +107,7 @@ button{
   background:#020617;
   display:none;
 }
+
 .login-box{
   max-width:360px;
   margin:120px auto;
@@ -98,17 +116,20 @@ button{
   padding:28px;
   text-align:center;
 }
+
 .login-box input{
   margin-bottom:12px;
   background:#020617;
   border:1px solid #1e293b;
   color:#e5e7eb;
 }
+
 .error{
   color:#ef4444;
   margin-top:10px;
   display:none;
 }
+
 .small{
   font-size:12px;
   color:#9ca3af;
@@ -118,7 +139,7 @@ button{
 
 <body>
 
-<!-- LOGIN ADMIN -->
+<!-- ===== LOGIN ADMIN ===== -->
 <div id="loginScreen">
   <div class="login-box">
     <h2>🔐 ADMIN LOGIN</h2>
@@ -131,15 +152,22 @@ button{
 
 <div class="container">
 
-  <!-- CHECK -->
+  <!-- ===== CHECK ===== -->
   <div class="panel">
     <div class="title">CHECK VIP</div>
+
+    <select id="vipFilter" onchange="check()">
+      <option value="">-- TẤT CẢ VIP --</option>
+    </select>
+
+    <div id="vipStats" class="small" style="margin:6px 0"></div>
+
     <input id="q" placeholder="Nhập mã chip / prefix">
     <button onclick="check()">CHECK</button>
     <div id="out"></div>
   </div>
 
-  <!-- ADMIN -->
+  <!-- ===== ADMIN ===== -->
   <div class="panel" id="adminPanel" style="display:none">
     <div class="title">ADMIN PANEL</div>
     <div id="adminList"></div>
@@ -147,43 +175,65 @@ button{
 
 </div>
 
+<!-- ===== LOAD DATA ===== -->
+<script src="data.js"></script>
+
 <script>
 /* ===== CONFIG ===== */
 const ADMIN_USER = "admin";
 const ADMIN_PASS = "12345";
 
-/* ===== DATA CHECK ===== */
-const data=[
- {code:"KM8V8001JM-B813",vip:8},
- {code:"KM8V9001JM-B813",vip:8},
- {code:"KM8V7001JA-B813",vip:8},
- {code:"KM8F800JM-B813",vip:9}
-];
-
 /* ===== WORKERS ===== */
 let admins = JSON.parse(localStorage.getItem("admins")) || [
  {name:"Thợ A",key:"A",lock:false,count:0,last:null},
  {name:"Thợ B",key:"B",lock:true,count:0,last:null},
- {name:"Thợ C",key:"C",lock:false,count:0,last:null},
- {name:"Thợ D",key:"D",lock:false,count:0,last:null}
+ {name:"Thợ C",key:"C",lock:false,count:0,last:null}
 ];
 
 /* ===== CHECK ===== */
 function normalize(s){
   return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
 }
+
+function initVipFilter(){
+  const vipSet = [...new Set(data.map(x=>x.vip))];
+  vipFilter.innerHTML =
+    `<option value="">-- TẤT CẢ VIP --</option>` +
+    vipSet.map(v=>`<option value="${v}">${v}</option>`).join("");
+}
+
+function renderVipStats(list){
+  const stats = {};
+  list.forEach(x=>{
+    stats[x.vip]=(stats[x.vip]||0)+1;
+  });
+  vipStats.innerHTML = Object.entries(stats)
+    .map(([v,c])=>`• ${v}: <b>${c}</b> mã`)
+    .join("<br>");
+}
+
 function check(){
-  const k = normalize(q.value);
+  const key = normalize(q.value);
+  const vipSel = vipFilter.value;
+  let r = data;
+
+  if(key) r = r.filter(x=>x.norm.includes(key));
+  if(vipSel) r = r.filter(x=>x.vip===vipSel);
+
   out.innerHTML="";
-  const r = data.filter(x=>normalize(x.code).includes(k));
   if(!r.length){
+    vipStats.innerHTML="";
     out.innerHTML="<div class='item'>❌ Không tìm thấy</div>";
     return;
   }
-  out.innerHTML=r.map(x=>`
+
+  renderVipStats(r);
+
+  out.innerHTML = r.map(x=>`
     <div class="item">
-      <b>${x.code}</b><br>
-      VIP ${x.vip}
+      <div><b>MÃ:</b> ${x.code}</div>
+      <div><b>VIP:</b> ${x.vip}</div>
+      <div><b>CHIP:</b> ${x.chip}</div>
     </div>
   `).join("");
 }
@@ -192,14 +242,12 @@ function check(){
 function renderAdmins(){
   adminList.innerHTML = admins.map((a,i)=>{
     const link = location.origin + location.pathname + "?u=" + a.key;
-
     return `
     <div class="admin-row">
       <div class="admin-box">
         <b>${a.name}</b>
         <div class="small">👁 ${a.count} lần</div>
-        ${a.last ? `<div class="small">🕒 ${a.last}</div>` : ""}
-
+        ${a.last?`<div class="small">🕒 ${a.last}</div>`:""}
         <div class="copy ${a.lock?"disabled":""}"
              id="copy-${i}"
              onclick="${a.lock?"":`copyLink('${link}',${i})`}">
@@ -217,7 +265,7 @@ function renderAdmins(){
 
 function toggleLock(i){
   admins[i].lock = !admins[i].lock;
-  localStorage.setItem("admins", JSON.stringify(admins));
+  localStorage.setItem("admins",JSON.stringify(admins));
   renderAdmins();
 }
 
@@ -250,6 +298,7 @@ function loginAdmin(){
 
   if(u==="ADMIN"){
     loginScreen.style.display="block";
+    initVipFilter();
     return;
   }
 
@@ -268,6 +317,8 @@ function loginAdmin(){
       }
     }
   }
+
+  initVipFilter();
 })();
 </script>
 
