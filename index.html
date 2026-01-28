@@ -13,7 +13,6 @@ body{
   background:#020617;
   color:#e5e7eb
 }
-
 .container{
   max-width:95vw;
   margin:20px auto;
@@ -21,21 +20,18 @@ body{
   grid-template-columns:2.3fr 1fr;
   gap:24px;
 }
-
 .panel{
   background:#020617;
   border:1px solid #1e293b;
   border-radius:20px;
   padding:22px;
 }
-
 .title{
   text-align:center;
   font-size:22px;
   font-weight:bold;
   margin-bottom:16px
 }
-
 input,button{
   width:100%;
   padding:14px;
@@ -43,7 +39,6 @@ input,button{
   border:none;
   font-size:16px;
 }
-
 button{
   margin-top:12px;
   background:#0ea5e9;
@@ -51,16 +46,12 @@ button{
   font-weight:bold;
   cursor:pointer
 }
-
 .item{
   padding:14px 0;
   border-bottom:1px solid #1e293b
 }
 
-.vip-8{color:#f59e0b}
-.vip-9{color:#ef4444}
-
-/* ADMIN */
+/* ADMIN LIST */
 .admin-row{
   display:flex;
   justify-content:space-between;
@@ -68,14 +59,29 @@ button{
   padding:12px 0;
   border-bottom:1px solid #1e293b
 }
-
+.admin-box{
+  display:flex;
+  flex-direction:column;
+  gap:4px
+}
 .lock{
   font-size:22px;
   cursor:pointer;
 }
+.lock.locked{color:#facc15}     /* vàng */
+.lock.unlocked{color:#22c55e}   /* xanh */
 
-.lock.locked{color:#facc15}    /* vàng */
-.lock.unlocked{color:#22c55e}  /* xanh */
+/* COPY */
+.copy{
+  font-size:16px;
+  color:#38bdf8;
+  cursor:pointer;
+}
+.copy.disabled{
+  color:#475569;
+  cursor:not-allowed;
+  pointer-events:none;
+}
 
 /* LOGIN */
 #loginScreen{
@@ -84,7 +90,6 @@ button{
   background:#020617;
   display:none;
 }
-
 .login-box{
   max-width:360px;
   margin:120px auto;
@@ -93,18 +98,20 @@ button{
   padding:28px;
   text-align:center;
 }
-
 .login-box input{
   margin-bottom:12px;
   background:#020617;
   border:1px solid #1e293b;
   color:#e5e7eb;
 }
-
 .error{
   color:#ef4444;
   margin-top:10px;
   display:none;
+}
+.small{
+  font-size:12px;
+  color:#9ca3af;
 }
 </style>
 </head>
@@ -154,83 +161,111 @@ const data=[
 ];
 
 /* ===== WORKERS ===== */
-let admins = [
- {name:"Thợ A",key:"A",lock:false},
- {name:"Thợ B",key:"B",lock:true},
- {name:"Thợ C",key:"C",lock:false},
- {name:"Thợ D",key:"D",lock:false}
+let admins = JSON.parse(localStorage.getItem("admins")) || [
+ {name:"Thợ A",key:"A",lock:false,count:0,last:null},
+ {name:"Thợ B",key:"B",lock:true,count:0,last:null},
+ {name:"Thợ C",key:"C",lock:false,count:0,last:null},
+ {name:"Thợ D",key:"D",lock:false,count:0,last:null}
 ];
 
 /* ===== CHECK ===== */
 function normalize(s){
-  return s.toUpperCase().replace(/[^A-Z0-9]/g,"")
+  return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
 }
-
 function check(){
   const k = normalize(q.value);
-  out.innerHTML = "";
+  out.innerHTML="";
   const r = data.filter(x=>normalize(x.code).includes(k));
   if(!r.length){
-    out.innerHTML = "<div class='item'>❌ Không tìm thấy</div>";
+    out.innerHTML="<div class='item'>❌ Không tìm thấy</div>";
     return;
   }
-  out.innerHTML = r.map(x=>`
+  out.innerHTML=r.map(x=>`
     <div class="item">
       <b>${x.code}</b><br>
-      <span class="vip-${x.vip}">VIP ${x.vip}</span>
+      VIP ${x.vip}
     </div>
   `).join("");
 }
 
 /* ===== ADMIN ===== */
 function renderAdmins(){
-  adminList.innerHTML = admins.map((a,i)=>`
+  adminList.innerHTML = admins.map((a,i)=>{
+    const link = location.origin + location.pathname + "?u=" + a.key;
+
+    return `
     <div class="admin-row">
-      <b>${a.name}</b>
+      <div class="admin-box">
+        <b>${a.name}</b>
+        <div class="small">👁 ${a.count} lần</div>
+        ${a.last ? `<div class="small">🕒 ${a.last}</div>` : ""}
+
+        <div class="copy ${a.lock?"disabled":""}"
+             id="copy-${i}"
+             onclick="${a.lock?"":`copyLink('${link}',${i})`}">
+          📋
+        </div>
+      </div>
+
       <div class="lock ${a.lock?"locked":"unlocked"}"
            onclick="toggleLock(${i})">
         ${a.lock?"🔒":"🔓"}
       </div>
-    </div>
-  `).join("");
+    </div>`;
+  }).join("");
 }
 
 function toggleLock(i){
   admins[i].lock = !admins[i].lock;
+  localStorage.setItem("admins", JSON.stringify(admins));
   renderAdmins();
+}
+
+function copyLink(link,i){
+  navigator.clipboard.writeText(link);
+  const el=document.getElementById("copy-"+i);
+  el.innerHTML="✔";
+  el.style.color="#22c55e";
+  setTimeout(()=>{
+    el.innerHTML="📋";
+    el.style.color="#38bdf8";
+  },1200);
 }
 
 /* ===== LOGIN ===== */
 function loginAdmin(){
-  if(adminUser.value !== ADMIN_USER || adminPass.value !== ADMIN_PASS){
-    loginError.style.display = "block";
+  if(adminUser.value!==ADMIN_USER || adminPass.value!==ADMIN_PASS){
+    loginError.style.display="block";
     return;
   }
-  loginScreen.style.display = "none";
-  adminPanel.style.display = "block";
+  loginScreen.style.display="none";
+  adminPanel.style.display="block";
   renderAdmins();
 }
 
 /* ===== ROUTE ===== */
 (function(){
-  const p = new URLSearchParams(location.search);
-  const u = p.get("u");
+  const p=new URLSearchParams(location.search);
+  const u=p.get("u");
 
-  if(u === "ADMIN"){
-    loginScreen.style.display = "block";
+  if(u==="ADMIN"){
+    loginScreen.style.display="block";
     return;
   }
 
   if(u){
-    const a = admins.find(x=>x.key===u);
-    if(a && a.lock){
-      document.body.innerHTML = `
-        <h2 style="
-          color:#facc15;
-          text-align:center;
-          margin-top:120px">
-          🔒 TÀI KHOẢN ĐÃ BỊ KHÓA
-        </h2>`;
+    const a=admins.find(x=>x.key===u);
+    if(a){
+      a.count++;
+      a.last=new Date().toLocaleString("vi-VN");
+      localStorage.setItem("admins",JSON.stringify(admins));
+
+      if(a.lock){
+        document.body.innerHTML=`
+          <h2 style="color:#facc15;text-align:center;margin-top:120px">
+            🔒 TÀI KHOẢN ĐÃ BỊ KHÓA
+          </h2>`;
+      }
     }
   }
 })();
