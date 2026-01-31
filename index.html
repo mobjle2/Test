@@ -8,105 +8,150 @@
 <style>
 body{
   margin:0;
-  font-family:Roboto,Segoe UI,Arial;
-  background:#0b1220;
-  color:#e2e8f0;
+  font-family:Segoe UI,Roboto,Arial;
+  background:radial-gradient(circle at top,#1a1a1a,#000);
+  color:#f1f5f9;
 }
 
 .container{
   max-width:1000px;
-  margin:20px auto;
-  padding:0 14px;
+  margin:30px auto;
+  padding:0 16px;
 }
 
 .title{
   text-align:center;
-  font-size:22px;
-  font-weight:600;
-  margin:20px 0;
-  color:#38bdf8;
+  font-size:26px;
+  font-weight:700;
+  margin:30px 0;
+  background:linear-gradient(90deg,#FFD700,#ffae00,#FFD700);
+  -webkit-background-clip:text;
+  -webkit-text-fill-color:transparent;
 }
 
 input{
   width:100%;
-  padding:14px;
-  border-radius:20px;
-  border:none;
-  background:#111827;
+  padding:16px;
+  border-radius:30px;
+  border:1px solid rgba(255,215,0,0.3);
+  background:#111;
   color:white;
   font-size:16px;
   outline:none;
-  box-shadow:0 4px 12px rgba(0,0,0,0.4);
 }
 
 button{
   width:100%;
-  padding:14px;
-  border-radius:20px;
+  padding:16px;
+  border-radius:30px;
   border:none;
-  margin-top:12px;
+  margin-top:14px;
   font-size:16px;
-  font-weight:600;
+  font-weight:700;
   cursor:pointer;
-  background:linear-gradient(90deg,#0ea5e9,#22d3ee);
+  background:linear-gradient(45deg,#FFD700,#ffb700);
   color:black;
-  transition:0.2s;
 }
 
-button:hover{
-  transform:translateY(-2px);
+.disclaimer{
+  margin-top:10px;
+  font-size:12px;
+  opacity:0.7;
+  text-align:center;
 }
 
 #out{
   display:grid;
-  grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
-  gap:16px;
-  margin-top:18px;
+  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
+  gap:20px;
+  margin-top:24px;
 }
 
 .item{
-  background:#111827;
-  border-radius:22px;
-  padding:18px;
-  box-shadow:0 8px 20px rgba(0,0,0,0.5);
-  border:1px solid rgba(255,255,255,0.05);
-  transition:0.25s;
-}
-
-.item:hover{
-  transform:translateY(-4px);
+  background:linear-gradient(145deg,#111,#1a1a1a);
+  border-radius:25px;
+  padding:20px;
+  border:1px solid rgba(255,215,0,0.15);
+  transition:0.3s;
 }
 
 .badge{
   display:inline-flex;
   align-items:center;
   gap:6px;
-  padding:6px 14px;
+  padding:6px 16px;
   border-radius:999px;
   font-size:13px;
   font-weight:600;
   margin-top:10px;
 }
 
-/* BRAND COLORS */
-.brand-samsung{ background:#1428a0; color:white; }
-.brand-micron{ background:#0066cc; color:white; }
-.brand-hynix{ background:#7c3aed; color:white; }
-.brand-toshiba{ background:#ea580c; color:white; }
-.brand-sandisk{ background:#dc2626; color:white; }
-
-/* VIP */
 .vip{
-  background:linear-gradient(90deg,#f59e0b,#ef4444);
-  color:white;
+  font-weight:800;
+  position:relative;
+  overflow:hidden;
 }
 
-.notfound{
-  grid-column:1/-1;
-  text-align:center;
-  padding:20px;
-  font-weight:600;
-  color:#f87171;
+.vip::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:200%;
+  height:100%;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,0.5),transparent);
+  animation:shine 2.5s infinite;
+}
+
+@keyframes shine{
+  0%{left:-100%;}
+  100%{left:100%;}
+}
+
+.vip-13{
+  background:linear-gradient(90deg,#5b0000,#ff0000,#5b0000);
+  color:white;
+  animation:rubyGlow 1s infinite alternate;
+}
+
+@keyframes rubyGlow{
+  from{box-shadow:0 0 15px red;}
+  to{box-shadow:0 0 40px crimson;}
+}
+
+#moneyRain,#firework{
+  position:fixed;
+  top:0;
+  left:0;
+  pointer-events:none;
+}
+
+#vip13Screen{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:radial-gradient(circle,#8b0000,#000);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  z-index:20;
+  opacity:0;
+  transition:0.5s;
+}
+
+.vip13Text{
+  font-size:60px;
+  font-weight:900;
+  color:#FFD700;
+  text-shadow:0 0 20px red,0 0 40px crimson;
+  animation:zoomFlash 1.2s infinite alternate;
+}
+
+@keyframes zoomFlash{
+  from{transform:scale(1);}
+  to{transform:scale(1.1);}
 }
 </style>
 </head>
@@ -114,106 +159,90 @@ button:hover{
 <body>
 
 <div class="container">
-  <div class="title">🔎 CHECK VIP + MMC</div>
+  <div class="title">👑 CHECK VIP SYSTEM</div>
   <input id="q" placeholder="Nhập mã cần kiểm tra">
   <button onclick="check()">CHECK</button>
+  <div class="disclaimer">
+    ⚠ Tool làm ve chai, chỉ mang tính tham khảo — data tổng hợp nhiều nguồn phân VIP nên có thể sai sót.
+  </div>
   <div id="out"></div>
+</div>
+
+<canvas id="moneyRain"></canvas>
+<canvas id="firework"></canvas>
+
+<div id="vip13Screen">
+  <div class="vip13Text">👑 VIP 13 DETECTED 👑</div>
 </div>
 
 <script src="data.js"></script>
 
 <script>
-
-const q = document.getElementById("q");
-const out = document.getElementById("out");
-
-const mmcMap={
- MMC1:"16G",
- MMC2:"32G",
- MMC3:"64G",
- MMC4:"128G",
- MMC5:"256G",
- MMC6:"512G"
-};
-
-function detectChip(code){
-  code = code.toUpperCase();
-
-  if(code.startsWith("JZ"))
-    return { name:"MICRON", icon:"🔵", class:"brand-micron" };
-
-  if(code.startsWith("KLM") || code.startsWith("KLU") || code.startsWith("KM"))
-    return { name:"SAMSUNG", icon:"🟢", class:"brand-samsung" };
-
-  if(code.startsWith("H26") || code.startsWith("H28") || code.startsWith("H2"))
-    return { name:"SK hynix", icon:"🟣", class:"brand-hynix" };
-
-  if(code.startsWith("SDIN"))
-    return { name:"SANDISK", icon:"🔴", class:"brand-sandisk" };
-
-  if(code.startsWith("THG"))
-    return { name:"TOSHIBA", icon:"🟠", class:"brand-toshiba" };
-
-  return { name:"UNKNOWN", icon:"⚪", class:"brand-micron" };
-}
+const q=document.getElementById("q");
+const out=document.getElementById("out");
 
 function normalize(s){
   return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
 }
 
 function check(){
-  const key = normalize(q.value);
+  const key=normalize(q.value);
   out.innerHTML="";
   if(!key) return;
 
-  let found=false;
-
   data.forEach(x=>{
-    const n=normalize(x.code);
-    if(n.includes(key)){
-      found=true;
-
-      const size=mmcMap[x.mmc]||"";
-      const chip = detectChip(x.code);
-
+    if(normalize(x.code).includes(key)){
       out.innerHTML+=`
         <div class="item">
-          <div style="font-size:16px;font-weight:600;">
-            🔎 ${x.code}
-          </div>
-
-          <div class="badge ${chip.class}">
-            ${chip.icon} ${chip.name}
-          </div>
-
-          ${x.mmc?`
-            <div class="badge" style="background:#0ea5e9;color:black;">
-              💾 ${x.mmc} (${size})
-            </div>
-          `:""}
-
+          ⚡ ${x.code}
           ${x.vip?`
-            <div class="badge vip">
-              ⭐ ${x.vip}
+            <div class="badge vip ${x.vip.includes("VIP 13")?"vip-13":""}">
+              👑 ${x.vip}
             </div>
           `:""}
         </div>
       `;
+      if(x.vip && x.vip.includes("VIP 13")){
+        showVIP13();
+      }
     }
   });
-
-  if(!found){
-    out.innerHTML=`<div class="notfound">❌ Không xác định mã</div>`;
-  }
 }
 
-/* ENTER KEY */
-q.addEventListener("keydown", function(e){
-  if(e.key === "Enter"){
-    check();
-  }
+q.addEventListener("keydown",e=>{
+  if(e.key==="Enter") check();
 });
 
+const moneyCanvas=document.getElementById("moneyRain");
+const mctx=moneyCanvas.getContext("2d");
+moneyCanvas.width=window.innerWidth;
+moneyCanvas.height=window.innerHeight;
+
+function startMoneyRain(){
+  let coins=[];
+  for(let i=0;i<100;i++){
+    coins.push({x:Math.random()*moneyCanvas.width,y:Math.random()*moneyCanvas.height});
+  }
+  function animate(){
+    mctx.clearRect(0,0,moneyCanvas.width,moneyCanvas.height);
+    mctx.font="20px Arial";
+    coins.forEach(c=>{
+      mctx.fillText("💰",c.x,c.y);
+      c.y+=3;
+      if(c.y>moneyCanvas.height) c.y=0;
+    });
+    requestAnimationFrame(animate);
+  }
+  animate();
+}
+
+function showVIP13(){
+  document.getElementById("vip13Screen").style.opacity=1;
+  startMoneyRain();
+  setTimeout(()=>{
+    document.getElementById("vip13Screen").style.opacity=0;
+  },4000);
+}
 </script>
 
 </body>
