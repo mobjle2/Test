@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CHECK VIP</title>
+<title>CHECK VIP - Secure</title>
 
 <style>
 body{
@@ -17,8 +17,6 @@ body{
   max-width:1000px;
   margin:30px auto;
   padding:0 16px;
-  position:relative;
-  z-index:50;
 }
 
 .title{
@@ -26,9 +24,7 @@ body{
   font-size:26px;
   font-weight:700;
   margin:30px 0;
-  background:linear-gradient(90deg,#FFD700,#ffae00,#FFD700);
-  -webkit-background-clip:text;
-  -webkit-text-fill-color:transparent;
+  color:#FFD700;
 }
 
 input{
@@ -62,137 +58,26 @@ button{
   text-align:center;
   color:#ff4d4f;
   text-shadow:0 0 8px rgba(255,0,0,0.4);
-  letter-spacing:0.3px;
 }
 
-
 #out{
-  display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(280px,1fr));
-  gap:20px;
   margin-top:24px;
 }
 
 .item{
-  background:linear-gradient(145deg,#111,#1a1a1a);
-  border-radius:25px;
+  background:#111;
+  border-radius:20px;
   padding:20px;
-  border:1px solid rgba(255,215,0,0.15);
+  border:1px solid rgba(255,215,0,0.2);
 }
 
 .badge{
-  display:inline-flex;
-  align-items:center;
-  gap:6px;
-  padding:6px 16px;
+  display:inline-block;
+  padding:6px 14px;
   border-radius:999px;
-  font-size:13px;
-  font-weight:700;
   margin-top:10px;
-  position:relative;
-  overflow:hidden;
-}
-
-/* VIP 5 */
-.vip-5{ background:#facc15; color:black; }
-
-/* VIP 6 */
-.vip-6{ background:linear-gradient(90deg,#facc15,#fb923c); color:black; }
-
-/* VIP 7 */
-.vip-7{
-  background:linear-gradient(90deg,#fb923c,#ef4444);
-  color:white;
-  box-shadow:0 0 18px #ef4444;
-}
-
-/* VIP 8 */
-.vip-8{
-  background:linear-gradient(90deg,#6d28d9,#a855f7);
-  box-shadow:0 0 25px #a855f7;
-}
-
-/* VIP 9 */
-.vip-9{
-  background:linear-gradient(90deg,#06b6d4,#0ea5e9);
-  box-shadow:0 0 30px #22d3ee;
-  animation:pulse9 1.5s infinite alternate;
-}
-
-@keyframes pulse9{
-  from{ box-shadow:0 0 15px #22d3ee; }
-  to{ box-shadow:0 0 40px #22d3ee; }
-}
-
-/* VIP 10 */
-.vip-10{
-  background:linear-gradient(90deg,#FFD700,#ffcc00,#FFD700);
-  color:black;
-  box-shadow:0 0 40px gold;
-}
-
-.vip-10::before{
-  content:"";
-  position:absolute;
-  top:0;
-  left:-100%;
-  width:200%;
-  height:100%;
-  background:linear-gradient(120deg,transparent,rgba(255,255,255,0.7),transparent);
-  animation:shine10 2s infinite;
-}
-
-@keyframes shine10{
-  0%{ left:-100%; }
-  100%{ left:100%; }
-}
-
-/* VIP 11-12 */
-.vip-11{
-  background:linear-gradient(90deg,#ff4d00,#ff0000);
-  box-shadow:0 0 30px red;
-}
-
-/* VIP 13 */
-.vip-13{
-  background:linear-gradient(90deg,#5b0000,#ff0000,#5b0000);
-  box-shadow:0 0 45px crimson;
-}
-
-#moneyRain{
-  position:fixed;
-  top:0;
-  left:0;
-  pointer-events:none;
-  z-index:9;
-}
-
-#vip13Screen{
-  position:fixed;
-  top:0;
-  left:0;
-  width:100%;
-  height:100%;
-  background:radial-gradient(circle,#8b0000,#000);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  z-index:20;
-  opacity:0;
-  transition:0.5s;
-}
-
-.vip13Text{
-  font-size:60px;
-  font-weight:900;
-  color:#FFD700;
-  text-shadow:0 0 20px red,0 0 40px crimson;
-  animation:zoomFlash 1.2s infinite alternate;
-}
-
-@keyframes zoomFlash{
-  from{transform:scale(1);}
-  to{transform:scale(1.1);}
+  font-weight:700;
+  background:#333;
 }
 </style>
 </head>
@@ -200,7 +85,7 @@ button{
 <body>
 
 <div class="container">
-  <div class="title">👑 CHECK VIP SYSTEM</div>
+  <div class="title">👑 CHECK VIP SYSTEM (SECURE)</div>
   <input id="q" placeholder="Nhập mã cần kiểm tra">
   <button onclick="check()">CHECK</button>
   <div class="disclaimer">
@@ -209,151 +94,53 @@ button{
   <div id="out"></div>
 </div>
 
-<canvas id="moneyRain"></canvas>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth, signInAnonymously } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 
-<div id="vip13Screen">
-  <div class="vip13Text">👑 VIP 13 DETECTED 👑</div>
-</div>
-
-<script src="data.js"></script>
-
-<script>
-const q=document.getElementById("q");
-const out=document.getElementById("out");
-
-const mmcMap={
- MMC1:"16G",MMC2:"32G",MMC3:"64G",
- MMC4:"128G",MMC5:"256G",MMC6:"512G"
+const firebaseConfig = {
+  apiKey: "AIzaSyBjBZJuSzt4JQDXvDyAXztTgo75qv6u5R8",
+  authDomain: "mobjle21982.firebaseapp.com",
+  projectId: "mobjle21982",
+  storageBucket: "mobjle21982.firebasestorage.app",
+  messagingSenderId: "1034646220657",
+  appId: "1:1034646220657:web:bd62b1defba0d5fae5d0d0",
+  measurementId: "G-NXJBBMT9WH"
 };
 
-function detectChip(code){
-  code = code.toUpperCase();
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-  if(code.startsWith("KM")||code.startsWith("KLM")||code.startsWith("KLU")||
-     code.startsWith("KMB")||code.startsWith("KM8")||code.startsWith("KMF")||
-     code.startsWith("KMQ")||code.startsWith("KMR")||code.startsWith("KMD")||
-     code.startsWith("KMG")){
-    return { name:"SAMSUNG", icon:"🟢" };
+await signInAnonymously(auth);
+
+window.check = async function(){
+  const key = document.getElementById("q").value.toUpperCase().trim();
+  const out = document.getElementById("out");
+
+  if(!key){
+    out.innerHTML = "<div style='color:red;padding:20px;text-align:center;'>⚠ Nhập mã trước khi check</div>";
+    return;
   }
 
-  if(code.startsWith("H9")||code.startsWith("H26")||code.startsWith("H28")||
-     code.startsWith("H2")||code.startsWith("HN")||code.startsWith("H5")){
-    return { name:"SK hynix", icon:"🟣" };
+  const docRef = doc(db, "chips", key);
+  const snap = await getDoc(docRef);
+
+  if(!snap.exists()){
+    out.innerHTML = "<div style='color:red;padding:20px;text-align:center;'>❌ Không xác định mã</div>";
+    return;
   }
 
-  if(code.startsWith("JZ")||code.startsWith("MT")){
-    return { name:"MICRON", icon:"🔵" };
-  }
+  const x = snap.data();
 
-  if(code.startsWith("THG")){
-    return { name:"KIOXIA / TOSHIBA", icon:"🟠" };
-  }
-
-  if(code.startsWith("SDIN")||code.startsWith("SD")||code.startsWith("WDC")){
-    return { name:"SANDISK / WD", icon:"🔴" };
-  }
-
-  return { name:"UNKNOWN / OEM", icon:"⚪" };
-}
-
-function normalize(s){
-  return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
-}
-
-function getVipClass(v){
-  const num=parseInt(v.match(/\d+/));
-
-  if(num<=2) return "vip-1";
-  if(num<=4) return "vip-3";
-  if(num==5) return "vip-5";
-  if(num==6) return "vip-6";
-  if(num==7) return "vip-7";
-  if(num==8) return "vip-8";
-  if(num==9) return "vip-9";
-  if(num==10) return "vip-10";
-  if(num<=12) return "vip-11";
-  return "vip-13";
-}
-
-function check(){
-  const key=normalize(q.value);
-  out.innerHTML="";
-  if(!key) return;
-
-  let found=false;
-
-  data.forEach(x=>{
-    if(normalize(x.code).includes(key)){
-      found=true;
-      const size=mmcMap[x.mmc]||"";
-      const chip=detectChip(x.code);
-
-      out.innerHTML+=`
-        <div class="item">
-          <div style="font-weight:700;">⚡ ${x.code}</div>
-
-          <div class="badge">
-            ${chip.icon} ${chip.name}
-          </div>
-
-          ${x.mmc?`
-            <div class="badge" style="background:#0ea5e9;color:black;">
-              💾 ${x.mmc} (${size})
-            </div>
-          `:""}
-
-          ${x.vip?`
-            <div class="badge ${getVipClass(x.vip)}">
-              👑 ${x.vip}
-            </div>
-          `:""}
-        </div>
-      `;
-
-      if(x.vip && x.vip.includes("VIP 13")){
-        showVIP13();
-      }
-    }
-  });
-
-  if(!found){
-    out.innerHTML=`<div style="text-align:center;padding:20px;color:#f87171;">❌ Không xác định mã</div>`;
-  }
-}
-
-q.addEventListener("keydown",e=>{
-  if(e.key==="Enter") check();
-});
-
-const moneyCanvas=document.getElementById("moneyRain");
-const mctx=moneyCanvas.getContext("2d");
-moneyCanvas.width=window.innerWidth;
-moneyCanvas.height=window.innerHeight;
-
-function startMoneyRain(){
-  let coins=[];
-  for(let i=0;i<80;i++){
-    coins.push({x:Math.random()*moneyCanvas.width,y:Math.random()*moneyCanvas.height});
-  }
-  function animate(){
-    mctx.clearRect(0,0,moneyCanvas.width,moneyCanvas.height);
-    mctx.font="20px Arial";
-    coins.forEach(c=>{
-      mctx.fillText("💰",c.x,c.y);
-      c.y+=3;
-      if(c.y>moneyCanvas.height) c.y=0;
-    });
-    requestAnimationFrame(animate);
-  }
-  animate();
-}
-
-function showVIP13(){
-  document.getElementById("vip13Screen").style.opacity=1;
-  startMoneyRain();
-  setTimeout(()=>{
-    document.getElementById("vip13Screen").style.opacity=0;
-  },4000);
+  out.innerHTML = `
+    <div class="item">
+      <div style="font-weight:700;">⚡ ${x.code}</div>
+      <div class="badge">👑 ${x.vip}</div>
+      <div class="badge">💾 ${x.mmc}</div>
+    </div>
+  `;
 }
 </script>
 
