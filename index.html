@@ -83,23 +83,76 @@ button{
   padding:6px 16px;
   border-radius:999px;
   font-size:13px;
-  font-weight:600;
+  font-weight:700;
   margin-top:10px;
+  position:relative;
+  overflow:hidden;
 }
 
-/* VIP COLOR SYSTEM */
-.vip-1{ background:#3a3a3a; color:white; }
-.vip-3{ background:linear-gradient(90deg,#1e3a8a,#2563eb); }
-.vip-5{ background:linear-gradient(90deg,#facc15,#f97316); color:black; }
-.vip-8{ background:linear-gradient(90deg,#6d28d9,#a855f7); box-shadow:0 0 15px #a855f7; }
-.vip-9{ background:linear-gradient(90deg,#06b6d4,#0ea5e9); box-shadow:0 0 18px #22d3ee; }
-.vip-10{ background:linear-gradient(90deg,#FFD700,#ffcc00,#FFD700); color:black; box-shadow:0 0 25px gold; }
-.vip-11{ background:linear-gradient(90deg,#ff4d00,#ff0000); box-shadow:0 0 30px red; }
-.vip-13{ background:linear-gradient(90deg,#5b0000,#ff0000,#5b0000); box-shadow:0 0 40px crimson; animation:rubyGlow 1s infinite alternate; }
+/* VIP 5 */
+.vip-5{ background:#facc15; color:black; }
 
-@keyframes rubyGlow{
-  from{ box-shadow:0 0 20px red; }
-  to{ box-shadow:0 0 50px crimson; }
+/* VIP 6 */
+.vip-6{ background:linear-gradient(90deg,#facc15,#fb923c); color:black; }
+
+/* VIP 7 */
+.vip-7{
+  background:linear-gradient(90deg,#fb923c,#ef4444);
+  color:white;
+  box-shadow:0 0 18px #ef4444;
+}
+
+/* VIP 8 */
+.vip-8{
+  background:linear-gradient(90deg,#6d28d9,#a855f7);
+  box-shadow:0 0 25px #a855f7;
+}
+
+/* VIP 9 */
+.vip-9{
+  background:linear-gradient(90deg,#06b6d4,#0ea5e9);
+  box-shadow:0 0 30px #22d3ee;
+  animation:pulse9 1.5s infinite alternate;
+}
+
+@keyframes pulse9{
+  from{ box-shadow:0 0 15px #22d3ee; }
+  to{ box-shadow:0 0 40px #22d3ee; }
+}
+
+/* VIP 10 */
+.vip-10{
+  background:linear-gradient(90deg,#FFD700,#ffcc00,#FFD700);
+  color:black;
+  box-shadow:0 0 40px gold;
+}
+
+.vip-10::before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:-100%;
+  width:200%;
+  height:100%;
+  background:linear-gradient(120deg,transparent,rgba(255,255,255,0.7),transparent);
+  animation:shine10 2s infinite;
+}
+
+@keyframes shine10{
+  0%{ left:-100%; }
+  100%{ left:100%; }
+}
+
+/* VIP 11-12 */
+.vip-11{
+  background:linear-gradient(90deg,#ff4d00,#ff0000);
+  box-shadow:0 0 30px red;
+}
+
+/* VIP 13 */
+.vip-13{
+  background:linear-gradient(90deg,#5b0000,#ff0000,#5b0000);
+  box-shadow:0 0 45px crimson;
 }
 
 #moneyRain{
@@ -172,7 +225,6 @@ const mmcMap={
 function detectChip(code){
   code = code.toUpperCase();
 
-  /* SAMSUNG */
   if(code.startsWith("KM")||code.startsWith("KLM")||code.startsWith("KLU")||
      code.startsWith("KMB")||code.startsWith("KM8")||code.startsWith("KMF")||
      code.startsWith("KMQ")||code.startsWith("KMR")||code.startsWith("KMD")||
@@ -180,23 +232,19 @@ function detectChip(code){
     return { name:"SAMSUNG", icon:"🟢" };
   }
 
-  /* SK HYNIX */
   if(code.startsWith("H9")||code.startsWith("H26")||code.startsWith("H28")||
      code.startsWith("H2")||code.startsWith("HN")||code.startsWith("H5")){
     return { name:"SK hynix", icon:"🟣" };
   }
 
-  /* MICRON */
   if(code.startsWith("JZ")||code.startsWith("MT")){
     return { name:"MICRON", icon:"🔵" };
   }
 
-  /* KIOXIA / TOSHIBA */
   if(code.startsWith("THG")){
     return { name:"KIOXIA / TOSHIBA", icon:"🟠" };
   }
 
-  /* SANDISK / WD */
   if(code.startsWith("SDIN")||code.startsWith("SD")||code.startsWith("WDC")){
     return { name:"SANDISK / WD", icon:"🔴" };
   }
@@ -210,9 +258,12 @@ function normalize(s){
 
 function getVipClass(v){
   const num=parseInt(v.match(/\d+/));
+
   if(num<=2) return "vip-1";
   if(num<=4) return "vip-3";
-  if(num<=7) return "vip-5";
+  if(num==5) return "vip-5";
+  if(num==6) return "vip-6";
+  if(num==7) return "vip-7";
   if(num==8) return "vip-8";
   if(num==9) return "vip-9";
   if(num==10) return "vip-10";
