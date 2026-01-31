@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MMC + VIP CHECK</title>
+<title>MMC CHECK</title>
 
 <style>
 body{
@@ -14,8 +14,8 @@ body{
 }
 
 .container{
-  max-width:900px;
-  margin:20px auto;
+  max-width:800px;
+  margin:30px auto;
   padding:0 12px;
 }
 
@@ -43,21 +43,20 @@ button{
 }
 
 #out{
-  margin-top:16px;
+  margin-top:20px;
 }
 
 .card{
   background:#0f172a;
   border-radius:16px;
-  padding:16px;
-  margin-bottom:14px;
+  padding:18px;
   border:1px solid #1e293b;
 }
 
 .row{
   display:flex;
   justify-content:space-between;
-  padding:6px 0;
+  padding:8px 0;
 }
 
 .label{
@@ -79,9 +78,10 @@ button{
 </head>
 
 <body>
+
 <div class="container">
-  <div class="title">CHECK DATA</div>
-  <input id="q" placeholder="Nhập mã">
+  <div class="title">CHECK MMC</div>
+  <input id="q" placeholder="Nhập mã chip">
   <button onclick="check()">CHECK</button>
   <div id="out"></div>
 </div>
@@ -90,7 +90,6 @@ button{
 
 <script>
 
-/* ===== MMC MAP ===== */
 const mmcMap = {
   MMC1: "16G",
   MMC2: "32G",
@@ -117,36 +116,22 @@ function check(){
     if(n.includes(key)){
       found = true;
 
-      const mmcVal = x.mmc;
-      const size = mmcMap[mmcVal] || "";
+      const size = mmcMap[x.mmc] || "";
       const sizeClass = size.replace("G","");
 
       out.innerHTML += `
         <div class="card">
           <div class="row">
-            <div class="label">MÃ</div>
-            <div class="value">${x.code}</div>
-          </div>
-
-          ${mmcVal ? `
-          <div class="row">
             <div class="label">DATA</div>
             <div class="value data-${sizeClass}">
-              ${mmcVal} (${size})
+              ${x.mmc} (${size})
             </div>
-          </div>` : ""}
+          </div>
 
-          ${x.vip ? `
-          <div class="row">
-            <div class="label">VIP</div>
-            <div class="value">${x.vip}</div>
-          </div>` : ""}
-
-          ${x.chip ? `
           <div class="row">
             <div class="label">CHIP</div>
             <div class="value">${x.chip}</div>
-          </div>` : ""}
+          </div>
         </div>
       `;
     }
@@ -158,5 +143,6 @@ function check(){
 }
 
 </script>
+
 </body>
 </html>
