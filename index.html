@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CHECK VIP</title>
+<title>CHECK VIP + MMC</title>
 
 <style>
 body{
@@ -50,11 +50,6 @@ button{
   cursor:pointer;
   background:linear-gradient(90deg,#0ea5e9,#22d3ee);
   color:black;
-  transition:0.2s;
-}
-
-button:hover{
-  transform:translateY(-2px);
 }
 
 #out{
@@ -70,11 +65,6 @@ button:hover{
   padding:18px;
   box-shadow:0 8px 20px rgba(0,0,0,0.5);
   border:1px solid rgba(255,255,255,0.05);
-  transition:0.25s;
-}
-
-.item:hover{
-  transform:translateY(-4px);
 }
 
 .badge{
@@ -164,34 +154,14 @@ function check(){
   out.innerHTML="";
   if(!key) return;
 
-  const merged = {};
-
-  data.forEach(item=>{
-    const cleanCode = normalize(item.code);
-
-    if(!merged[cleanCode]){
-      merged[cleanCode] = {
-        code: item.code.replace(/\.$/,'').trim()
-      };
-    }
-
-    if(item.vip){
-      const match = item.vip.match(/VIP\s*\d+\+?/i);
-      merged[cleanCode].vip = match
-        ? match[0].toUpperCase().replace(/\s+/g," ")
-        : item.vip;
-    }
-
-    if(item.mmc){
-      merged[cleanCode].mmc = item.mmc;
-    }
+  const results = data.filter(item=>{
+    return (
+      normalize(item.code).includes(key) ||
+      (item.mmc && normalize(item.mmc).includes(key)) ||
+      (item.mmc && mmcMap[item.mmc] && normalize(mmcMap[item.mmc]).includes(key)) ||
+      (item.vip && normalize(item.vip).includes(key))
+    );
   });
-
-  const finalData = Object.values(merged);
-
-  const results = finalData.filter(x =>
-    normalize(x.code).includes(key)
-  );
 
   if(results.length === 0){
     out.innerHTML=`<div class="notfound">❌ Không xác định mã</div>`;
@@ -204,10 +174,7 @@ function check(){
   });
 
   out.innerHTML = `
-    <div style="grid-column:1/-1;
-                font-weight:600;
-                color:#38bdf8;
-                margin-bottom:8px;">
+    <div style="grid-column:1/-1;font-weight:600;color:#38bdf8;">
       🔍 Tìm thấy ${results.length} mã
     </div>
   `;
@@ -215,12 +182,9 @@ function check(){
   results.forEach(x=>{
     const chip = detectChip(x.code);
     const size = x.mmc && mmcMap[x.mmc] ? mmcMap[x.mmc] : "";
-    const highlight = results.length === 1 
-      ? "style='box-shadow:0 0 25px #22d3ee'" 
-      : "";
 
     out.innerHTML += `
-      <div class="item" ${highlight}>
+      <div class="item">
         <div style="font-size:16px;font-weight:600;">
           🔎 ${x.code}
         </div>
