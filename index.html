@@ -8,45 +8,106 @@
 <style>
 body{
   margin:0;
-  font-family:Arial;
-  background:#020617;
+  font-family:Segoe UI,Arial;
+  background:linear-gradient(135deg,#020617,#0f172a);
   color:#e5e7eb;
 }
+
 .container{
   max-width:900px;
   margin:30px auto;
-  padding:0 12px;
+  padding:0 14px;
 }
+
 .title{
   text-align:center;
-  font-size:22px;
-  font-weight:bold;
-  margin-bottom:16px;
+  font-size:24px;
+  font-weight:700;
+  margin-bottom:18px;
+  color:#38bdf8;
+  letter-spacing:1px;
 }
-input,button{
+
+input{
   width:100%;
   padding:14px;
-  border-radius:12px;
+  border-radius:14px;
+  border:1px solid #1e293b;
+  background:#0f172a;
+  color:#fff;
+  font-size:16px;
+  outline:none;
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border-radius:14px;
   border:none;
   font-size:16px;
-}
-button{
   margin-top:12px;
-  background:#0ea5e9;
+  background:linear-gradient(90deg,#0ea5e9,#22d3ee);
   color:#000;
   font-weight:bold;
   cursor:pointer;
+  transition:0.3s;
 }
+
+button:hover{
+  transform:scale(1.03);
+  box-shadow:0 0 15px #22d3ee;
+}
+
 .item{
   background:#0f172a;
-  border-radius:14px;
-  padding:14px;
-  margin-top:12px;
+  border-radius:16px;
+  padding:16px;
+  margin-top:14px;
   border:1px solid #1e293b;
+  box-shadow:0 0 15px rgba(0,0,0,0.4);
+  animation:fadeIn 0.3s ease;
 }
-.vip{
-  color:#facc15;
+
+@keyframes fadeIn{
+  from{opacity:0; transform:translateY(10px);}
+  to{opacity:1; transform:translateY(0);}
+}
+
+.badge{
+  display:inline-block;
+  padding:6px 12px;
+  border-radius:999px;
+  font-size:13px;
   font-weight:bold;
+  margin-top:6px;
+  margin-right:6px;
+}
+
+/* VIP COLORS */
+.vip1{ background:#334155; color:#fff; }
+.vip2{ background:#2563eb; color:#fff; }
+.vip3{ background:#16a34a; color:#fff; }
+.vip4{ background:#eab308; color:#000; }
+.vip5{ background:#f97316; color:#000; }
+.vip6{ background:#ef4444; color:#fff; }
+.vip7{ background:#8b5cf6; color:#fff; }
+.vip8{ background:#ec4899; color:#fff; }
+.vip9{ background:#14b8a6; color:#000; }
+.vip10{ background:#0ea5e9; color:#000; }
+.vip11{ background:#9333ea; color:#fff; }
+.vip12{ background:#22c55e; color:#000; }
+.vip13{ background:#f43f5e; color:#fff; }
+
+.mmc{
+  background:#0ea5e9;
+  color:#000;
+}
+
+.notfound{
+  text-align:center;
+  font-weight:bold;
+  color:#f87171;
+  padding:20px;
 }
 </style>
 </head>
@@ -54,8 +115,8 @@ button{
 <body>
 
 <div class="container">
-  <div class="title">CHECK VIP + MMC</div>
-  <input id="q" placeholder="Nhập mã">
+  <div class="title">🔎 CHECK VIP + MMC</div>
+  <input id="q" placeholder="Nhập mã cần kiểm tra">
   <button onclick="check()">CHECK</button>
   <div id="out"></div>
 </div>
@@ -76,7 +137,7 @@ const mmcMap={
 function detectChip(code){
   code = code.toUpperCase();
   if(code.startsWith("JZ")) return "MICRON";
-  if(code.startsWith("KLM") || code.startsWith("KLU")) return "SAM SUNG";
+  if(code.startsWith("KLM") || code.startsWith("KLU")) return "SAMSUNG";
   if(code.startsWith("H26") || code.startsWith("H28") || code.startsWith("H2")) return "SK hynix";
   if(code.startsWith("SDIN")) return "SANDISK";
   if(code.startsWith("THG")) return "TOSHIBA";
@@ -100,18 +161,20 @@ function check(){
       found=true;
 
       const size=mmcMap[x.mmc]||"";
+      const vipNumber = x.vip ? x.vip.match(/\d+/)?.[0] : "";
+      const vipClass = vipNumber ? "vip"+vipNumber : "";
 
       out.innerHTML+=`
         <div class="item">
-          <div><b>MÃ:</b> ${x.code}</div>
+          <div>🔎 <b>MÃ:</b> ${x.code}</div>
 
           ${x.mmc?`
-            <div><b>DATA :</b> ${x.mmc} (${size})</div>
-            <div><b>CHIP :</b> ${detectChip(x.code)}</div>
+            <div class="badge mmc">💾 ${x.mmc} (${size})</div>
+            <div>🏷 CHIP: <b>${detectChip(x.code)}</b></div>
           `:""}
 
           ${x.vip?`
-            <div class="vip">VIP : ${x.vip}</div>
+            <div class="badge ${vipClass}">⭐ ${x.vip}</div>
           `:""}
         </div>
       `;
@@ -119,7 +182,7 @@ function check(){
   });
 
   if(!found){
-    out.innerHTML=`<div class="item">❌ Không xác định</div>`;
+    out.innerHTML=`<div class="item notfound">❌ Không xác định mã</div>`;
   }
 }
 
