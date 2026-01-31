@@ -140,12 +140,16 @@ function check(){
  for(let i=0;i<index.length;i++){
    if(index[i]._n.includes(key)){
      const x=index[i];
-     html.push(`
-      <div class="item">
-        <div><b>MÃ:</b> ${x.code}</div>
-        <div class="vip ${vipClass(x.vip)}">VIP : ${x.vip}</div>
-      </div>
-     `);
+  html.push(`
+  <div class="item">
+    <div><b>MÃ:</b> ${x.code}</div>
+
+    ${x.mmc ? `<div><b>DATA :</b> ${x.mmc}</div>` : ""}
+
+    ${x.vip ? `<div class="vip ${vipClass(x.vip)}">VIP : ${x.vip}</div>` : ""}
+  </div>
+`);
+
      if(++found>=30) break; // limit render
    }
  }
