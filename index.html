@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>mobjle2/Test</title>
+
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial;background:#020617;color:#e5e7eb}
+.container{max-width:95vw;margin:20px auto;display:grid;grid-template-columns:2.3fr 1fr;gap:24px}
+.panel{background:#020617;border:1px solid #1e293b;border-radius:20px;padding:22px}
+.title{text-align:center;font-size:22px;font-weight:bold;margin-bottom:16px}
+
+input,button{width:100%;padding:14px;border-radius:12px;border:none;font-size:16px}
+button{margin-top:12px;background:#0ea5e9;color:#000;font-weight:bold;cursor:pointer}
+
+/* RESULT GRID */
+#out{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:16px}
+.item{padding:14px;border:1px solid #1e293b;border-radius:14px}
+
+/* VIP COLORS */
+.vip{font-weight:bold}
+.vip-1,.vip-2,.vip-3,.vip-4{color:#9ca3af}
+.vip-5{color:#3b82f6}
+.vip-6{color:#06b6d4}
+.vip-6p{color:#a855f7}
+.vip-7{color:#ec4899}
+.vip-8{color:#f59e0b}
+.vip-9{color:#ef4444}
+.vip-10{color:#b91c1c}
+
+/* ADMIN */
+.admin-row{display:flex;justify-content:space-between;align-items:center;padding:12px 0;border-bottom:1px solid #1e293b}
+.admin-box{flex:1}
+.copy{font-size:12px;color:#38bdf8;cursor:pointer;margin-top:4px}
+.lock{font-size:13px;padding:6px 14px;border-radius:999px;font-weight:bold}
+.lock-open{background:#22c55e;color:#000}
+.lock-close{background:#facc15;color:#000}
+.stat{font-size:12px;color:#93c5fd;margin-top:4px}
+.edit{font-size:12px;color:#a5b4fc;cursor:pointer;margin-left:6px}
+.logout{text-align:right;font-size:13px;color:#38bdf8;cursor:pointer;margin-bottom:8px}
+
+/* LOGIN */
+#adminLogin{display:none}
+.login-box{max-width:360px;margin:80px auto;background:#020617;border:1px solid #1e293b;border-radius:18px;padding:24px}
+.error{color:#ef4444;font-size:13px;margin-top:8px;text-align:center}
+</style>
+</head>
+
+<body>
+<div class="container" id="mainUI">
+  <div class="panel">
+    <div class="title">CHECK VIP</div>
+    <input id="q" placeholder="Nhập mã chip / prefix">
+    <button onclick="debouncedCheck()">CHECK</button>
+    <div id="out"></div>
+  </div>
+
+  <div class="panel" id="adminPanel" style="display:none">
+    <div class="logout" onclick="logout()">Đăng xuất</div>
+    <div class="title">ADMIN TRUNGGIA82</div>
+    <div id="todayStat" class="stat"></div>
+    <div id="adminList"></div>
+  </div>
+</div>
+
+<div id="adminLogin">
+  <div class="login-box">
+    <h3 style="text-align:center">🔐 ĐĂNG NHẬP ADMIN</h3>
+    <input id="adminPassInput" type="password" placeholder="Nhập mật khẩu admin">
+    <button onclick="loginAdmin()">ĐĂNG NHẬP</button>
+    <div id="loginError" class="error"></div>
+  </div>
+</div>
+
+<script src="data.js"></script>
+<script>
+/* ===== CONFIG ===== */
+const ADMIN_PASS="12345";
+
+/* ===== ADMIN DATA ===== */
+const defaultAdmins=[
+ {name:"Thợ A",key:"A"},
+ {name:"Thợ B",key:"B"},
+ {name:"Thợ C",key:"C"},
+ {name:"Thợ D",key:"D"},
+ {name:"Thợ E",key:"E"},
+ {name:"Thợ F",key:"F"},
+ {name:"Thợ G",key:"G"},
+ {name:"Thợ H",key:"H"}
+];
+
+let admins=JSON.parse(localStorage.getItem("admins")||JSON.stringify(defaultAdmins));
+let locks=JSON.parse(localStorage.getItem("locks")||"{}");
+let stats=JSON.parse(localStorage.getItem("stats")||"{}");
+let daily=JSON.parse(localStorage.getItem("daily")||"{}");
+const today=new Date().toISOString().slice(0,10);
+
+/* ===== SEARCH INDEX (OPTIMIZED) ===== */
+const index = data.map(d=>({
+  ...d,
+  _n: (d.code||"").toUpperCase().replace(/[^A-Z0-9]/g,"")
+}));
+
+/* ===== UTILS ===== */
+function vipClass(v){
+ if(!v) return "";
+ if(v.includes("6+")) return "vip-6p";
+ const m=v.match(/(\d+)/);
+ return m ? "vip-"+m[1] : "";
+}
+function normalize(s){return s.toUpperCase().replace(/[^A-Z0-9]/g,"")}
+
+/* ===== FAST CHECK ===== */
+function check(){
+ const p=new URLSearchParams(location.search);
+ const u=p.get("u");
+ if(u && locks[u]===false){
+   out.innerHTML="<div class='item'>🚫 Tài khoản đang bị khoá</div>";
+   return;
+ }
+
+ if(u){
+   stats[u]=(stats[u]||0)+1;
+   daily[today]=daily[today]||{};
+   daily[today][u]=(daily[today][u]||0)+1;
+   localStorage.setItem("stats",JSON.stringify(stats));
+   localStorage.setItem("daily",JSON.stringify(daily));
+ }
+
+ const key=normalize(q.value);
+ out.innerHTML="";
+ if(!key) return;
+
+ let found=0;
+ let html=[];
+
+ for(let i=0;i<index.length;i++){
+   if(index[i]._n.includes(key)){
+     const x=index[i];
+     html.push(`
+      <div class="item">
+        <div><b>MÃ:</b> ${x.code}</div>
+        <div class="vip ${vipClass(x.vip)}">VIP : ${x.vip}</div>
+      </div>
+     `);
+     if(++found>=30) break; // limit render
+   }
+ }
+ out.innerHTML=html.length?html.join(""):"<div class='item'>❌ Không xác định VIP</div>";
+}
+
+/* debounce for huge data */
+let t=null;
+function debouncedCheck(){
+ clearTimeout(t);
+ t=setTimeout(check,120);
+}
+
+/* ===== ADMIN ===== */
+function renderAdmins(){
+ const todayData=daily[today]||{};
+ let sum=0;admins.forEach(a=>sum+=todayData[a.key]||0);
+ todayStat.innerHTML="📅 Hôm nay: <b>"+sum+"</b> lượt check";
+
+ adminList.innerHTML=admins.map(a=>{
+   const open=locks[a.key]!==false;
+   const cls=open?"lock-open":"lock-close";
+   const text=open?"ĐANG MỞ":"ĐANG KHOÁ";
+   const total=stats[a.key]||0;
+   const day=todayData[a.key]||0;
+   const link=location.origin+location.pathname+"?u="+a.key;
+   return `
+    <div class="admin-row">
+      <div class="admin-box">
+        <div><b>${a.name}</b><span class="edit" onclick="editName('${a.key}')">✏️</span></div>
+        <div class="stat">Hôm nay: ${day} | Tổng: ${total}</div>
+        <div class="copy" onclick="navigator.clipboard.writeText('${link}')">📋 Copy link</div>
+      </div>
+      <div class="lock ${cls}" onclick="toggleLock('${a.key}')">${text}</div>
+    </div>`;
+ }).join("");
+}
+
+function editName(key){
+ const a=admins.find(x=>x.key===key);
+ const n=prompt("Đổi tên thợ:",a.name);
+ if(!n) return;
+ a.name=n;
+ localStorage.setItem("admins",JSON.stringify(admins));
+ renderAdmins();
+}
+function toggleLock(k){
+ locks[k]=!(locks[k]!==false);
+ localStorage.setItem("locks",JSON.stringify(locks));
+ renderAdmins();
+}
+
+/* ===== LOGIN ===== */
+function loginAdmin(){
+ if(adminPassInput.value!==ADMIN_PASS){
+   loginError.innerText="❌ Sai mật khẩu";
+   return;
+ }
+ localStorage.setItem("adminLogin","1");
+ showAdmin();
+}
+function logout(){
+ localStorage.removeItem("adminLogin");
+ location.href=location.pathname;
+}
+function showAdmin(){
+ adminLogin.style.display="none";
+ mainUI.style.display="grid";
+ adminPanel.style.display="block";
+ renderAdmins();
+}
+(function(){
+ const p=new URLSearchParams(location.search);
+ if(p.get("u")==="ADMIN"){
+   mainUI.style.display="none";
+   if(localStorage.getItem("adminLogin")==="1") showAdmin();
+   else adminLogin.style.display="block";
+ }
+})();
+</script>
+</body>
+</html>
