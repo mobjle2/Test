@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>CHECK VIP</title>
+
+<style>
+body{
+  margin:0;
+  font-family:Roboto,Segoe UI,Arial;
+  background:#0b1220;
+  color:#e2e8f0;
+}
+
+.container{
+  max-width:1000px;
+  margin:20px auto;
+  padding:0 14px;
+}
+
+.title{
+  text-align:center;
+  font-size:22px;
+  font-weight:600;
+  margin:20px 0;
+  color:#38bdf8;
+}
+
+input{
+  width:100%;
+  padding:14px;
+  border-radius:20px;
+  border:none;
+  background:#111827;
+  color:white;
+  font-size:16px;
+  outline:none;
+  box-shadow:0 4px 12px rgba(0,0,0,0.4);
+}
+
+button{
+  width:100%;
+  padding:14px;
+  border-radius:20px;
+  border:none;
+  margin-top:12px;
+  font-size:16px;
+  font-weight:600;
+  cursor:pointer;
+  background:linear-gradient(90deg,#0ea5e9,#22d3ee);
+  color:black;
+  transition:0.2s;
+}
+
+button:hover{
+  transform:translateY(-2px);
+}
+
+#out{
+  display:grid;
+  grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
+  gap:16px;
+  margin-top:18px;
+}
+
+.item{
+  background:#111827;
+  border-radius:22px;
+  padding:18px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.5);
+  border:1px solid rgba(255,255,255,0.05);
+  transition:0.25s;
+}
+
+.item:hover{
+  transform:translateY(-4px);
+}
+
+.badge{
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 14px;
+  border-radius:999px;
+  font-size:13px;
+  font-weight:600;
+  margin-top:10px;
+}
+
+/* BRAND COLORS */
+.brand-samsung{ background:#1428a0; color:white; }
+.brand-micron{ background:#0066cc; color:white; }
+.brand-hynix{ background:#7c3aed; color:white; }
+.brand-toshiba{ background:#ea580c; color:white; }
+.brand-sandisk{ background:#dc2626; color:white; }
+
+/* VIP */
+.vip{
+  background:linear-gradient(90deg,#f59e0b,#ef4444);
+  color:white;
+}
+
+.notfound{
+  grid-column:1/-1;
+  text-align:center;
+  padding:20px;
+  font-weight:600;
+  color:#f87171;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+  <div class="title">🔎 CHECK VIP + MMC</div>
+  <input id="q" placeholder="Nhập mã cần kiểm tra">
+  <button onclick="check()">CHECK</button>
+  <div id="out"></div>
+</div>
+
+<script src="data.js"></script>
+
+<script>
+
+const q = document.getElementById("q");
+const out = document.getElementById("out");
+
+const mmcMap={
+ MMC1:"16G",
+ MMC2:"32G",
+ MMC3:"64G",
+ MMC4:"128G",
+ MMC5:"256G",
+ MMC6:"512G"
+};
+
+function detectChip(code){
+  code = code.toUpperCase();
+
+  if(code.startsWith("JZ"))
+    return { name:"MICRON", icon:"🔵", class:"brand-micron" };
+
+  if(code.startsWith("KLM") || code.startsWith("KLU") || code.startsWith("KM"))
+    return { name:"SAMSUNG", icon:"🟢", class:"brand-samsung" };
+
+  if(code.startsWith("H26") || code.startsWith("H28") || code.startsWith("H2"))
+    return { name:"SK hynix", icon:"🟣", class:"brand-hynix" };
+
+  if(code.startsWith("SDIN"))
+    return { name:"SANDISK", icon:"🔴", class:"brand-sandisk" };
+
+  if(code.startsWith("THG"))
+    return { name:"TOSHIBA", icon:"🟠", class:"brand-toshiba" };
+
+  return { name:"UNKNOWN", icon:"⚪", class:"brand-micron" };
+}
+
+function normalize(s){
+  return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
+}
+
+function check(){
+  const key = normalize(q.value);
+  out.innerHTML="";
+  if(!key) return;
+
+  let found=false;
+
+  data.forEach(x=>{
+    const n=normalize(x.code);
+    if(n.includes(key)){
+      found=true;
+
+      const size=mmcMap[x.mmc]||"";
+      const chip = detectChip(x.code);
+
+      out.innerHTML+=`
+        <div class="item">
+          <div style="font-size:16px;font-weight:600;">
+            🔎 ${x.code}
+          </div>
+
+          <div class="badge ${chip.class}">
+            ${chip.icon} ${chip.name}
+          </div>
+
+          ${x.mmc?`
+            <div class="badge" style="background:#0ea5e9;color:black;">
+              💾 ${x.mmc} (${size})
+            </div>
+          `:""}
+
+          ${x.vip?`
+            <div class="badge vip">
+              ⭐ ${x.vip}
+            </div>
+          `:""}
+        </div>
+      `;
+    }
+  });
+
+  if(!found){
+    out.innerHTML=`<div class="notfound">❌ Không xác định mã</div>`;
+  }
+}
+
+/* ENTER KEY */
+q.addEventListener("keydown", function(e){
+  if(e.key === "Enter"){
+    check();
+  }
+});
+
+</script>
+
+</body>
+</html>
