@@ -21,8 +21,6 @@ body{
   z-index:50;
 }
 
-}
-
 .title{
   text-align:center;
   font-size:26px;
@@ -89,37 +87,19 @@ button{
   margin-top:10px;
 }
 
-.vip{
-  font-weight:800;
-  position:relative;
-  overflow:hidden;
-}
-
-.vip::before{
-  content:"";
-  position:absolute;
-  top:0;
-  left:-100%;
-  width:200%;
-  height:100%;
-  background:linear-gradient(120deg,transparent,rgba(255,255,255,0.5),transparent);
-  animation:shine 2.5s infinite;
-}
-
-@keyframes shine{
-  0%{left:-100%;}
-  100%{left:100%;}
-}
-
-.vip-13{
-  background:linear-gradient(90deg,#5b0000,#ff0000,#5b0000);
-  color:white;
-  animation:rubyGlow 1s infinite alternate;
-}
+/* VIP COLOR SYSTEM */
+.vip-1{ background:#3a3a3a; color:white; }
+.vip-3{ background:linear-gradient(90deg,#1e3a8a,#2563eb); }
+.vip-5{ background:linear-gradient(90deg,#facc15,#f97316); color:black; }
+.vip-8{ background:linear-gradient(90deg,#6d28d9,#a855f7); box-shadow:0 0 15px #a855f7; }
+.vip-9{ background:linear-gradient(90deg,#06b6d4,#0ea5e9); box-shadow:0 0 18px #22d3ee; }
+.vip-10{ background:linear-gradient(90deg,#FFD700,#ffcc00,#FFD700); color:black; box-shadow:0 0 25px gold; }
+.vip-11{ background:linear-gradient(90deg,#ff4d00,#ff0000); box-shadow:0 0 30px red; }
+.vip-13{ background:linear-gradient(90deg,#5b0000,#ff0000,#5b0000); box-shadow:0 0 40px crimson; animation:rubyGlow 1s infinite alternate; }
 
 @keyframes rubyGlow{
-  from{box-shadow:0 0 15px red;}
-  to{box-shadow:0 0 40px crimson;}
+  from{ box-shadow:0 0 20px red; }
+  to{ box-shadow:0 0 50px crimson; }
 }
 
 #moneyRain{
@@ -190,23 +170,61 @@ const mmcMap={
 };
 
 function detectChip(code){
-  code=code.toUpperCase();
-  if(code.startsWith("JZ")) return {name:"MICRON",icon:"🔵"};
-  if(code.startsWith("KLM")||code.startsWith("KLU")||code.startsWith("KM")) return {name:"SAMSUNG",icon:"🟢"};
-  if(code.startsWith("H26")||code.startsWith("H28")||code.startsWith("H2")) return {name:"SK hynix",icon:"🟣"};
-  if(code.startsWith("SDIN")) return {name:"SANDISK",icon:"🔴"};
-  if(code.startsWith("THG")) return {name:"TOSHIBA",icon:"🟠"};
-  return {name:"UNKNOWN",icon:"⚪"};
+  code = code.toUpperCase();
+
+  /* SAMSUNG */
+  if(code.startsWith("KM")||code.startsWith("KLM")||code.startsWith("KLU")||
+     code.startsWith("KMB")||code.startsWith("KM8")||code.startsWith("KMF")||
+     code.startsWith("KMQ")||code.startsWith("KMR")||code.startsWith("KMD")||
+     code.startsWith("KMG")){
+    return { name:"SAMSUNG", icon:"🟢" };
+  }
+
+  /* SK HYNIX */
+  if(code.startsWith("H9")||code.startsWith("H26")||code.startsWith("H28")||
+     code.startsWith("H2")||code.startsWith("HN")||code.startsWith("H5")){
+    return { name:"SK hynix", icon:"🟣" };
+  }
+
+  /* MICRON */
+  if(code.startsWith("JZ")||code.startsWith("MT")){
+    return { name:"MICRON", icon:"🔵" };
+  }
+
+  /* KIOXIA / TOSHIBA */
+  if(code.startsWith("THG")){
+    return { name:"KIOXIA / TOSHIBA", icon:"🟠" };
+  }
+
+  /* SANDISK / WD */
+  if(code.startsWith("SDIN")||code.startsWith("SD")||code.startsWith("WDC")){
+    return { name:"SANDISK / WD", icon:"🔴" };
+  }
+
+  return { name:"UNKNOWN / OEM", icon:"⚪" };
 }
 
 function normalize(s){
   return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
 }
 
+function getVipClass(v){
+  const num=parseInt(v.match(/\d+/));
+  if(num<=2) return "vip-1";
+  if(num<=4) return "vip-3";
+  if(num<=7) return "vip-5";
+  if(num==8) return "vip-8";
+  if(num==9) return "vip-9";
+  if(num==10) return "vip-10";
+  if(num<=12) return "vip-11";
+  return "vip-13";
+}
+
 function check(){
   const key=normalize(q.value);
   out.innerHTML="";
   if(!key) return;
+
   let found=false;
 
   data.forEach(x=>{
@@ -230,7 +248,7 @@ function check(){
           `:""}
 
           ${x.vip?`
-            <div class="badge vip ${x.vip.includes("VIP 13")?"vip-13":""}">
+            <div class="badge ${getVipClass(x.vip)}">
               👑 ${x.vip}
             </div>
           `:""}
@@ -252,7 +270,6 @@ q.addEventListener("keydown",e=>{
   if(e.key==="Enter") check();
 });
 
-/* MONEY RAIN */
 const moneyCanvas=document.getElementById("moneyRain");
 const mctx=moneyCanvas.getContext("2d");
 moneyCanvas.width=window.innerWidth;
