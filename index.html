@@ -1,129 +1,64 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html>
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>CHECK VIP</title>
-
+<title>Corporate Cloud Server Edition</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="firebase.js"></script>
 <style>
-body{
-  margin:0;
-  font-family:Arial;
-  background:#020617;
-  color:#e5e7eb;
-}
-.container{
-  max-width:900px;
-  margin:30px auto;
-  padding:0 12px;
-}
-.title{
-  text-align:center;
-  font-size:22px;
-  font-weight:bold;
-  margin-bottom:16px;
-}
-input,button{
-  width:100%;
-  padding:14px;
-  border-radius:12px;
-  border:none;
-  font-size:16px;
-}
-button{
-  margin-top:12px;
-  background:#0ea5e9;
-  color:#000;
-  font-weight:bold;
-  cursor:pointer;
-}
-.item{
-  background:#0f172a;
-  border-radius:14px;
-  padding:14px;
-  margin-top:12px;
-  border:1px solid #1e293b;
-}
-.vip{
-  color:#facc15;
-  font-weight:bold;
-}
+body{background:#0b1220;color:#fff;font-family:Arial;padding:30px}
+.item{background:#111827;padding:15px;border-radius:12px;margin-top:15px}
 </style>
 </head>
-
 <body>
 
-<div class="container">
-  <div class="title">CHECK VIP + MMC</div>
-  <input id="q" placeholder="Nhập mã">
-  <button onclick="check()">CHECK</button>
-  <div id="out"></div>
-</div>
-
-<script src="data.js"></script>
+<h2>Corporate Cloud Secure Check</h2>
+<input id="q" placeholder="Enter code">
+<button onclick="secureCheck()">CHECK</button>
+<div id="out"></div>
 
 <script>
-
-const mmcMap={
- MMC1:"16G",
- MMC2:"32G",
- MMC3:"64G",
- MMC4:"128G",
- MMC5:"256G",
- MMC6:"512G"
-};
-
-function detectChip(code){
-  code = code.toUpperCase();
-  if(code.startsWith("JZ")) return "MICRON";
-  if(code.startsWith("KLM") || code.startsWith("KLU")) return "SAM SUNG";
-  if(code.startsWith("H26") || code.startsWith("H28") || code.startsWith("H2")) return "SK hynix";
-  if(code.startsWith("SDIN")) return "SANDISK";
-  if(code.startsWith("THG")) return "TOSHIBA";
-  return "—";
-}
-
 function normalize(s){
-  return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
+ return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
 }
 
-function check(){
-  const key = normalize(q.value);
-  out.innerHTML="";
-  if(!key) return;
-
-  let found=false;
-
-  data.forEach(x=>{
-    const n=normalize(x.code);
-    if(n.includes(key)){
-      found=true;
-
-      const size=mmcMap[x.mmc]||"";
-
-      out.innerHTML+=`
-        <div class="item">
-          <div><b>MÃ:</b> ${x.code}</div>
-
-          ${x.mmc?`
-            <div><b>DATA :</b> ${x.mmc} (${size})</div>
-            <div><b>CHIP :</b> ${detectChip(x.code)}</div>
-          `:""}
-
-          ${x.vip?`
-            <div class="vip">VIP : ${x.vip}</div>
-          `:""}
-        </div>
-      `;
-    }
-  });
-
-  if(!found){
-    out.innerHTML=`<div class="item">❌ Không xác định</div>`;
-  }
+function chipIcon(code){
+ if(code.startsWith("JZ")) return "MICRON";
+ if(code.startsWith("KLM")||code.startsWith("KLU")) return "SAMSUNG";
+ if(code.startsWith("H26")||code.startsWith("H28")) return "SK hynix";
+ return "UNKNOWN";
 }
 
+async function secureCheck(){
+ const user = firebase.auth().currentUser;
+ if(!user){ alert("Login required"); return; }
+
+ const token = await user.getIdToken();
+ const key = normalize(document.getElementById("q").value);
+
+ const res = await fetch("/api/check?code="+key,{
+   headers:{ Authorization:"Bearer "+token }
+ });
+
+ const json = await res.json();
+ const out = document.getElementById("out");
+
+ if(!json.found){
+   out.innerHTML="Not found";
+   return;
+ }
+
+ out.innerHTML="";
+ json.data.forEach(x=>{
+   out.innerHTML += `<div class="item">
+     <div>MÃ: ${x.code}</div>
+     <div>DATA: ${x.mmc}</div>
+     <div>CHIP: ${chipIcon(x.code)}</div>
+     ${x.vip?`<div>VIP: ${x.vip}</div>`:""}
+   </div>`;
+ });
+}
 </script>
-
 </body>
 </html>
