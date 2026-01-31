@@ -8,106 +8,105 @@
 <style>
 body{
   margin:0;
-  font-family:Segoe UI,Arial;
-  background:linear-gradient(135deg,#020617,#0f172a);
-  color:#e5e7eb;
+  font-family:Roboto,Segoe UI,Arial;
+  background:#0b1220;
+  color:#e2e8f0;
 }
 
 .container{
-  max-width:900px;
-  margin:30px auto;
+  max-width:1000px;
+  margin:20px auto;
   padding:0 14px;
 }
 
 .title{
   text-align:center;
-  font-size:24px;
-  font-weight:700;
-  margin-bottom:18px;
+  font-size:22px;
+  font-weight:600;
+  margin:20px 0;
   color:#38bdf8;
-  letter-spacing:1px;
 }
 
 input{
   width:100%;
   padding:14px;
-  border-radius:14px;
-  border:1px solid #1e293b;
-  background:#0f172a;
-  color:#fff;
+  border-radius:20px;
+  border:none;
+  background:#111827;
+  color:white;
   font-size:16px;
   outline:none;
+  box-shadow:0 4px 12px rgba(0,0,0,0.4);
 }
 
 button{
   width:100%;
   padding:14px;
-  border-radius:14px;
+  border-radius:20px;
   border:none;
-  font-size:16px;
   margin-top:12px;
-  background:linear-gradient(90deg,#0ea5e9,#22d3ee);
-  color:#000;
-  font-weight:bold;
+  font-size:16px;
+  font-weight:600;
   cursor:pointer;
-  transition:0.3s;
+  background:linear-gradient(90deg,#0ea5e9,#22d3ee);
+  color:black;
+  transition:0.2s;
 }
 
 button:hover{
-  transform:scale(1.03);
-  box-shadow:0 0 15px #22d3ee;
+  transform:translateY(-2px);
+}
+
+#out{
+  display:grid;
+  grid-template-columns: repeat(auto-fill,minmax(280px,1fr));
+  gap:16px;
+  margin-top:18px;
 }
 
 .item{
-  background:#0f172a;
-  border-radius:16px;
-  padding:16px;
-  margin-top:14px;
-  border:1px solid #1e293b;
-  box-shadow:0 0 15px rgba(0,0,0,0.4);
-  animation:fadeIn 0.3s ease;
+  background:#111827;
+  border-radius:22px;
+  padding:18px;
+  box-shadow:0 8px 20px rgba(0,0,0,0.5);
+  border:1px solid rgba(255,255,255,0.05);
+  transition:0.25s;
 }
 
-@keyframes fadeIn{
-  from{opacity:0; transform:translateY(10px);}
-  to{opacity:1; transform:translateY(0);}
+.item:hover{
+  transform:translateY(-4px);
 }
 
 .badge{
-  display:inline-block;
-  padding:6px 12px;
+  display:inline-flex;
+  align-items:center;
+  gap:6px;
+  padding:6px 14px;
   border-radius:999px;
   font-size:13px;
-  font-weight:bold;
-  margin-top:6px;
-  margin-right:6px;
+  font-weight:600;
+  margin-top:10px;
 }
 
-/* VIP COLORS */
-.vip1{ background:#334155; color:#fff; }
-.vip2{ background:#2563eb; color:#fff; }
-.vip3{ background:#16a34a; color:#fff; }
-.vip4{ background:#eab308; color:#000; }
-.vip5{ background:#f97316; color:#000; }
-.vip6{ background:#ef4444; color:#fff; }
-.vip7{ background:#8b5cf6; color:#fff; }
-.vip8{ background:#ec4899; color:#fff; }
-.vip9{ background:#14b8a6; color:#000; }
-.vip10{ background:#0ea5e9; color:#000; }
-.vip11{ background:#9333ea; color:#fff; }
-.vip12{ background:#22c55e; color:#000; }
-.vip13{ background:#f43f5e; color:#fff; }
+/* BRAND COLORS */
+.brand-samsung{ background:#1428a0; color:white; }
+.brand-micron{ background:#0066cc; color:white; }
+.brand-hynix{ background:#7c3aed; color:white; }
+.brand-toshiba{ background:#ea580c; color:white; }
+.brand-sandisk{ background:#dc2626; color:white; }
 
-.mmc{
-  background:#0ea5e9;
-  color:#000;
+/* VIP */
+.vip{
+  background:linear-gradient(90deg,#f59e0b,#ef4444);
+  color:white;
 }
 
 .notfound{
+  grid-column:1/-1;
   text-align:center;
-  font-weight:bold;
-  color:#f87171;
   padding:20px;
+  font-weight:600;
+  color:#f87171;
 }
 </style>
 </head>
@@ -125,6 +124,9 @@ button:hover{
 
 <script>
 
+const q = document.getElementById("q");
+const out = document.getElementById("out");
+
 const mmcMap={
  MMC1:"16G",
  MMC2:"32G",
@@ -136,12 +138,23 @@ const mmcMap={
 
 function detectChip(code){
   code = code.toUpperCase();
-  if(code.startsWith("JZ")) return "MICRON";
-  if(code.startsWith("KLM") || code.startsWith("KLU")) return "SAMSUNG";
-  if(code.startsWith("H26") || code.startsWith("H28") || code.startsWith("H2")) return "SK hynix";
-  if(code.startsWith("SDIN")) return "SANDISK";
-  if(code.startsWith("THG")) return "TOSHIBA";
-  return "—";
+
+  if(code.startsWith("JZ"))
+    return { name:"MICRON", icon:"🔵", class:"brand-micron" };
+
+  if(code.startsWith("KLM") || code.startsWith("KLU") || code.startsWith("KM"))
+    return { name:"SAMSUNG", icon:"🟢", class:"brand-samsung" };
+
+  if(code.startsWith("H26") || code.startsWith("H28") || code.startsWith("H2"))
+    return { name:"SK hynix", icon:"🟣", class:"brand-hynix" };
+
+  if(code.startsWith("SDIN"))
+    return { name:"SANDISK", icon:"🔴", class:"brand-sandisk" };
+
+  if(code.startsWith("THG"))
+    return { name:"TOSHIBA", icon:"🟠", class:"brand-toshiba" };
+
+  return { name:"UNKNOWN", icon:"⚪", class:"brand-micron" };
 }
 
 function normalize(s){
@@ -161,20 +174,28 @@ function check(){
       found=true;
 
       const size=mmcMap[x.mmc]||"";
-      const vipNumber = x.vip ? x.vip.match(/\d+/)?.[0] : "";
-      const vipClass = vipNumber ? "vip"+vipNumber : "";
+      const chip = detectChip(x.code);
 
       out.innerHTML+=`
         <div class="item">
-          <div>🔎 <b>MÃ:</b> ${x.code}</div>
+          <div style="font-size:16px;font-weight:600;">
+            🔎 ${x.code}
+          </div>
+
+          <div class="badge ${chip.class}">
+            ${chip.icon} ${chip.name}
+          </div>
 
           ${x.mmc?`
-            <div class="badge mmc">💾 ${x.mmc} (${size})</div>
-            <div>🏷 CHIP: <b>${detectChip(x.code)}</b></div>
+            <div class="badge" style="background:#0ea5e9;color:black;">
+              💾 ${x.mmc} (${size})
+            </div>
           `:""}
 
           ${x.vip?`
-            <div class="badge ${vipClass}">⭐ ${x.vip}</div>
+            <div class="badge vip">
+              ⭐ ${x.vip}
+            </div>
           `:""}
         </div>
       `;
@@ -182,9 +203,11 @@ function check(){
   });
 
   if(!found){
-    out.innerHTML=`<div class="item notfound">❌ Không xác định mã</div>`;
+    out.innerHTML=`<div class="notfound">❌ Không xác định mã</div>`;
   }
 }
+
+/* ENTER KEY */
 q.addEventListener("keydown", function(e){
   if(e.key === "Enter"){
     check();
