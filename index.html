@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Corporate Cloud Server Edition</title>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+<script src="firebase.js"></script>
+<style>
+body{background:#0b1220;color:#fff;font-family:Arial;padding:30px}
+.item{background:#111827;padding:15px;border-radius:12px;margin-top:15px}
+</style>
+</head>
+<body>
+
+<h2>Corporate Cloud Secure Check</h2>
+<input id="q" placeholder="Enter code">
+<button onclick="secureCheck()">CHECK</button>
+<div id="out"></div>
+
+<script>
+function normalize(s){
+ return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
+}
+
+function chipIcon(code){
+ if(code.startsWith("JZ")) return "MICRON";
+ if(code.startsWith("KLM")||code.startsWith("KLU")) return "SAMSUNG";
+ if(code.startsWith("H26")||code.startsWith("H28")) return "SK hynix";
+ return "UNKNOWN";
+}
+
+async function secureCheck(){
+ const user = firebase.auth().currentUser;
+ if(!user){ alert("Login required"); return; }
+
+ const token = await user.getIdToken();
+ const key = normalize(document.getElementById("q").value);
+
+ const res = await fetch("/api/check?code="+key,{
+   headers:{ Authorization:"Bearer "+token }
+ });
+
+ const json = await res.json();
+ const out = document.getElementById("out");
+
+ if(!json.found){
+   out.innerHTML="Not found";
+   return;
+ }
+
+ out.innerHTML="";
+ json.data.forEach(x=>{
+   out.innerHTML += `<div class="item">
+     <div>MÃ: ${x.code}</div>
+     <div>DATA: ${x.mmc}</div>
+     <div>CHIP: ${chipIcon(x.code)}</div>
+     ${x.vip?`<div>VIP: ${x.vip}</div>`:""}
+   </div>`;
+ });
+}
+</script>
+</body>
+</html>
