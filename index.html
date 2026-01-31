@@ -72,7 +72,6 @@ button{
   border-radius:25px;
   padding:20px;
   border:1px solid rgba(255,215,0,0.15);
-  transition:0.3s;
 }
 
 .badge{
@@ -119,11 +118,12 @@ button{
   to{box-shadow:0 0 40px crimson;}
 }
 
-#moneyRain,#firework{
+#moneyRain{
   position:fixed;
   top:0;
   left:0;
   pointer-events:none;
+  z-index:9;
 }
 
 #vip13Screen{
@@ -169,7 +169,6 @@ button{
 </div>
 
 <canvas id="moneyRain"></canvas>
-<canvas id="firework"></canvas>
 
 <div id="vip13Screen">
   <div class="vip13Text">👑 VIP 13 DETECTED 👑</div>
@@ -181,6 +180,21 @@ button{
 const q=document.getElementById("q");
 const out=document.getElementById("out");
 
+const mmcMap={
+ MMC1:"16G",MMC2:"32G",MMC3:"64G",
+ MMC4:"128G",MMC5:"256G",MMC6:"512G"
+};
+
+function detectChip(code){
+  code=code.toUpperCase();
+  if(code.startsWith("JZ")) return {name:"MICRON",icon:"🔵"};
+  if(code.startsWith("KLM")||code.startsWith("KLU")||code.startsWith("KM")) return {name:"SAMSUNG",icon:"🟢"};
+  if(code.startsWith("H26")||code.startsWith("H28")||code.startsWith("H2")) return {name:"SK hynix",icon:"🟣"};
+  if(code.startsWith("SDIN")) return {name:"SANDISK",icon:"🔴"};
+  if(code.startsWith("THG")) return {name:"TOSHIBA",icon:"🟠"};
+  return {name:"UNKNOWN",icon:"⚪"};
+}
+
 function normalize(s){
   return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
 }
@@ -189,12 +203,28 @@ function check(){
   const key=normalize(q.value);
   out.innerHTML="";
   if(!key) return;
+  let found=false;
 
   data.forEach(x=>{
     if(normalize(x.code).includes(key)){
+      found=true;
+      const size=mmcMap[x.mmc]||"";
+      const chip=detectChip(x.code);
+
       out.innerHTML+=`
         <div class="item">
-          ⚡ ${x.code}
+          <div style="font-weight:700;">⚡ ${x.code}</div>
+
+          <div class="badge">
+            ${chip.icon} ${chip.name}
+          </div>
+
+          ${x.mmc?`
+            <div class="badge" style="background:#0ea5e9;color:black;">
+              💾 ${x.mmc} (${size})
+            </div>
+          `:""}
+
           ${x.vip?`
             <div class="badge vip ${x.vip.includes("VIP 13")?"vip-13":""}">
               👑 ${x.vip}
@@ -202,17 +232,23 @@ function check(){
           `:""}
         </div>
       `;
+
       if(x.vip && x.vip.includes("VIP 13")){
         showVIP13();
       }
     }
   });
+
+  if(!found){
+    out.innerHTML=`<div style="text-align:center;padding:20px;color:#f87171;">❌ Không xác định mã</div>`;
+  }
 }
 
 q.addEventListener("keydown",e=>{
   if(e.key==="Enter") check();
 });
 
+/* MONEY RAIN */
 const moneyCanvas=document.getElementById("moneyRain");
 const mctx=moneyCanvas.getContext("2d");
 moneyCanvas.width=window.innerWidth;
@@ -220,7 +256,7 @@ moneyCanvas.height=window.innerHeight;
 
 function startMoneyRain(){
   let coins=[];
-  for(let i=0;i<100;i++){
+  for(let i=0;i<80;i++){
     coins.push({x:Math.random()*moneyCanvas.width,y:Math.random()*moneyCanvas.height});
   }
   function animate(){
