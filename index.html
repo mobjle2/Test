@@ -161,50 +161,80 @@ function normalize(s){
   return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
 }
 
+function getVipNumber(vip){
+  const match = vip?.match(/\d+/);
+  return match ? parseInt(match[0]) : 0;
+}
+
 function check(){
   const key = normalize(q.value);
   out.innerHTML="";
   if(!key) return;
 
-  let found=false;
-
-  data.forEach(x=>{
-    const n=normalize(x.code);
-    if(n.includes(key)){
-      found=true;
-
-      const size=mmcMap[x.mmc]||"";
-      const chip = detectChip(x.code);
-
-      out.innerHTML+=`
-        <div class="item">
-          <div style="font-size:16px;font-weight:600;">
-            🔎 ${x.code}
-          </div>
-
-          <div class="badge ${chip.class}">
-            ${chip.icon} ${chip.name}
-          </div>
-
-          ${x.mmc?`
-            <div class="badge" style="background:#0ea5e9;color:black;">
-              💾 ${x.mmc} (${size})
-            </div>
-          `:""}
-
-          ${x.vip?`
-            <div class="badge vip">
-              ⭐ ${x.vip}
-            </div>
-          `:""}
-        </div>
-      `;
-    }
+  // loại trùng theo code
+  const uniqueMap = {};
+  data.forEach(item=>{
+    uniqueMap[item.code] = item;
   });
 
-  if(!found){
+  const uniqueData = Object.values(uniqueMap);
+
+  // lọc kết quả
+  let results = uniqueData.filter(x =>
+    normalize(x.code).includes(key)
+  );
+
+  if(results.length === 0){
     out.innerHTML=`<div class="notfound">❌ Không xác định mã</div>`;
+    return;
   }
+
+  // sắp xếp VIP cao → thấp
+  results.sort((a,b)=>{
+    return getVipNumber(b.vip) - getVipNumber(a.vip);
+  });
+
+  // hiển thị số lượng
+  out.innerHTML = `
+    <div style="grid-column:1/-1;
+                font-weight:600;
+                color:#38bdf8;
+                margin-bottom:8px;">
+      🔍 Tìm thấy ${results.length} mã
+    </div>
+  `;
+
+  results.forEach(x=>{
+    const chip = detectChip(x.code);
+    const size = x.mmc && mmcMap[x.mmc] ? `(${mmcMap[x.mmc]})` : "";
+    const highlight = results.length === 1 
+      ? "style='box-shadow:0 0 25px #22d3ee'" 
+      : "";
+
+    out.innerHTML += `
+      <div class="item" ${highlight}>
+        <div style="font-size:16px;font-weight:600;">
+          🔎 ${x.code}
+        </div>
+
+        <div class="badge ${chip.class}">
+          ${chip.icon} ${chip.name}
+        </div>
+
+        ${x.mmc ? `
+          <div class="badge" style="background:#0ea5e9;color:black;">
+            💾 ${x.mmc} ${size}
+          </div>
+        ` : ""}
+
+        ${x.vip ? `
+          <div class="badge vip">
+            ⭐ ${x.vip}
+          </div>
+        ` : ""}
+      </div>
+    `;
+  });
 }
 
 /* ENTER KEY */
@@ -213,6 +243,7 @@ q.addEventListener("keydown", function(e){
     check();
   }
 });
+
 
 </script>
 
