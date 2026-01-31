@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MMC CHECK</title>
+<title>MMC CHECK AUTO</title>
 
 <style>
 body{
@@ -90,6 +90,7 @@ button{
 
 <script>
 
+/* ===== MMC MAP ===== */
 const mmcMap = {
   MMC1: "16G",
   MMC2: "32G",
@@ -98,6 +99,19 @@ const mmcMap = {
   MMC5: "256G",
   MMC6: "512G"
 };
+
+/* ===== AUTO CHIP DETECT ===== */
+function detectChip(code){
+  code = code.toUpperCase();
+
+  if(code.startsWith("JZ")) return "MICRON";
+  if(code.startsWith("KLM") || code.startsWith("KLU")) return "SAM SUNG";
+  if(code.startsWith("H26") || code.startsWith("H28") || code.startsWith("H2")) return "SK hynix";
+  if(code.startsWith("SDIN")) return "SANDISK";
+  if(code.startsWith("THG")) return "TOSHIBA";
+
+  return "—";
+}
 
 function normalize(s){
   return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
@@ -130,7 +144,9 @@ function check(){
 
           <div class="row">
             <div class="label">CHIP</div>
-            <div class="value">${x.chip}</div>
+            <div class="value">
+              ${detectChip(x.code)}
+            </div>
           </div>
         </div>
       `;
