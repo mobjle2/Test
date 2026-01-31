@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>MMC CHECK AUTO</title>
+<title>VIP + MMC CHECK</title>
 
 <style>
 body{
@@ -14,7 +14,7 @@ body{
 }
 
 .container{
-  max-width:800px;
+  max-width:900px;
   margin:30px auto;
   padding:0 12px;
 }
@@ -51,6 +51,7 @@ button{
   border-radius:16px;
   padding:18px;
   border:1px solid #1e293b;
+  margin-bottom:15px;
 }
 
 .row{
@@ -68,6 +69,7 @@ button{
   font-weight:600;
 }
 
+/* MMC màu theo dung lượng */
 .data-16{color:#9ca3af;}
 .data-32{color:#3b82f6;}
 .data-64{color:#06b6d4;}
@@ -80,7 +82,7 @@ button{
 <body>
 
 <div class="container">
-  <div class="title">CHECK MMC</div>
+  <div class="title">CHECK VIP + MMC</div>
   <input id="q" placeholder="Nhập mã chip">
   <button onclick="check()">CHECK</button>
   <div id="out"></div>
@@ -135,12 +137,22 @@ function check(){
 
       out.innerHTML += `
         <div class="card">
+
+          ${x.mmc ? `
           <div class="row">
             <div class="label">DATA</div>
             <div class="value data-${sizeClass}">
               ${x.mmc} (${size})
             </div>
-          </div>
+          </div>` : ""}
+
+          ${x.vip ? `
+          <div class="row">
+            <div class="label">VIP</div>
+            <div class="value">
+              ${x.vip}
+            </div>
+          </div>` : ""}
 
           <div class="row">
             <div class="label">CHIP</div>
@@ -148,6 +160,7 @@ function check(){
               ${detectChip(x.code)}
             </div>
           </div>
+
         </div>
       `;
     }
