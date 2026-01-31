@@ -2,63 +2,89 @@
 <html>
 <head>
 <meta charset="UTF-8">
-<title>Corporate Cloud Server Edition</title>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
-<script src="firebase.js"></script>
+<title>CHECK VIP + MMC</title>
 <style>
-body{background:#0b1220;color:#fff;font-family:Arial;padding:30px}
-.item{background:#111827;padding:15px;border-radius:12px;margin-top:15px}
+body{
+  background:#0f172a;
+  color:#fff;
+  font-family:Arial;
+  padding:30px;
+}
+input,button{
+  padding:10px;
+  font-size:16px;
+}
+.item{
+  background:#1e293b;
+  padding:15px;
+  margin-top:15px;
+  border-radius:10px;
+}
 </style>
 </head>
 <body>
 
-<h2>Corporate Cloud Secure Check</h2>
-<input id="q" placeholder="Enter code">
-<button onclick="secureCheck()">CHECK</button>
+<h2>CHECK VIP + MMC</h2>
+
+<input id="q" placeholder="Nhập mã">
+<button onclick="check()">CHECK</button>
+
 <div id="out"></div>
 
+<script src="data.js"></script>
+
 <script>
+
+const mmcMap={
+  MMC1:"16G",
+  MMC2:"32G",
+  MMC3:"64G",
+  MMC4:"128G",
+  MMC5:"256G",
+  MMC6:"512G"
+};
+
 function normalize(s){
- return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
+  return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
 }
 
 function chipIcon(code){
- if(code.startsWith("JZ")) return "MICRON";
- if(code.startsWith("KLM")||code.startsWith("KLU")) return "SAMSUNG";
- if(code.startsWith("H26")||code.startsWith("H28")) return "SK hynix";
- return "UNKNOWN";
+  if(code.startsWith("JZ")) return "MICRON";
+  if(code.startsWith("KLM")||code.startsWith("KLU")) return "SAM SUNG";
+  if(code.startsWith("H26")||code.startsWith("H28")) return "SK hynix";
+  return "UNKNOWN";
 }
 
-async function secureCheck(){
- const user = firebase.auth().currentUser;
- if(!user){ alert("Login required"); return; }
+function check(){
 
- const token = await user.getIdToken();
- const key = normalize(document.getElementById("q").value);
+  const key = normalize(q.value);
+  const out = document.getElementById("out");
 
- const res = await fetch("/api/check?code="+key,{
-   headers:{ Authorization:"Bearer "+token }
- });
+  const found = data.filter(x=>x.norm===key);
 
- const json = await res.json();
- const out = document.getElementById("out");
+  if(!found.length){
+    out.innerHTML="❌ Không xác định";
+    return;
+  }
 
- if(!json.found){
-   out.innerHTML="Not found";
-   return;
- }
+  out.innerHTML="";
 
- out.innerHTML="";
- json.data.forEach(x=>{
-   out.innerHTML += `<div class="item">
-     <div>MÃ: ${x.code}</div>
-     <div>DATA: ${x.mmc}</div>
-     <div>CHIP: ${chipIcon(x.code)}</div>
-     ${x.vip?`<div>VIP: ${x.vip}</div>`:""}
-   </div>`;
- });
+  found.forEach(x=>{
+    const size = mmcMap[x.mmc] || "";
+
+    out.innerHTML+=`
+      <div class="item">
+        <div><b>MÃ:</b> ${x.code}</div>
+        ${x.mmc?`<div><b>DATA:</b> ${x.mmc} (${size})</div>`:""}
+        <div><b>CHIP:</b> ${chipIcon(x.code)}</div>
+        ${x.vip?`<div><b>VIP:</b> ${x.vip}</div>`:""}
+      </div>
+    `;
+  });
+
 }
+
 </script>
+
 </body>
 </html>
