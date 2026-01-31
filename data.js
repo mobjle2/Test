@@ -389,7 +389,17 @@ const rawData = [
 
 ];
 
-const data = rawData.map(([code,vip])=>({
-  code:code.replace(/\s+/g,'').replace(/\.$/,'').toUpperCase(),
-  vip
-}));
+const data = rawData.map(item=>{
+  if(Array.isArray(item)){
+    return {
+      code: item[0].replace(/\s+/g,'').replace(/\.$/,'').toUpperCase(),
+      vip: item[1]
+    };
+  }
+
+  return {
+    code: item.code.replace(/\s+/g,'').replace(/\.$/,'').toUpperCase(),
+    mmc: item.mmc,
+    vip: item.vip
+  };
+});
