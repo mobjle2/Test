@@ -88,14 +88,12 @@ button:hover{
   margin-top:10px;
 }
 
-/* BRAND COLORS */
 .brand-samsung{ background:#1428a0; color:white; }
 .brand-micron{ background:#0066cc; color:white; }
 .brand-hynix{ background:#7c3aed; color:white; }
 .brand-toshiba{ background:#ea580c; color:white; }
 .brand-sandisk{ background:#dc2626; color:white; }
 
-/* VIP */
 .vip{
   background:linear-gradient(90deg,#f59e0b,#ef4444);
   color:white;
@@ -161,26 +159,37 @@ function normalize(s){
   return s.toUpperCase().replace(/[^A-Z0-9]/g,"");
 }
 
-function getVipNumber(vip){
-  const match = vip?.match(/\d+/);
-  return match ? parseInt(match[0]) : 0;
-}
-
 function check(){
   const key = normalize(q.value);
   out.innerHTML="";
   if(!key) return;
 
-  // loại trùng theo code
-  const uniqueMap = {};
+  const merged = {};
+
   data.forEach(item=>{
-    uniqueMap[item.code] = item;
+    const cleanCode = normalize(item.code);
+
+    if(!merged[cleanCode]){
+      merged[cleanCode] = {
+        code: item.code.replace(/\.$/,'').trim()
+      };
+    }
+
+    if(item.vip){
+      const match = item.vip.match(/VIP\s*\d+\+?/i);
+      merged[cleanCode].vip = match
+        ? match[0].toUpperCase().replace(/\s+/g," ")
+        : item.vip;
+    }
+
+    if(item.mmc){
+      merged[cleanCode].mmc = item.mmc;
+    }
   });
 
-  const uniqueData = Object.values(uniqueMap);
+  const finalData = Object.values(merged);
 
-  // lọc kết quả
-  let results = uniqueData.filter(x =>
+  const results = finalData.filter(x =>
     normalize(x.code).includes(key)
   );
 
@@ -189,12 +198,11 @@ function check(){
     return;
   }
 
-  // sắp xếp VIP cao → thấp
   results.sort((a,b)=>{
-    return getVipNumber(b.vip) - getVipNumber(a.vip);
+    const getNum = v => v ? parseInt(v.match(/\d+/)) : 0;
+    return getNum(b.vip) - getNum(a.vip);
   });
 
-  // hiển thị số lượng
   out.innerHTML = `
     <div style="grid-column:1/-1;
                 font-weight:600;
@@ -206,7 +214,7 @@ function check(){
 
   results.forEach(x=>{
     const chip = detectChip(x.code);
-    const size = x.mmc && mmcMap[x.mmc] ? `(${mmcMap[x.mmc]})` : "";
+    const size = x.mmc && mmcMap[x.mmc] ? mmcMap[x.mmc] : "";
     const highlight = results.length === 1 
       ? "style='box-shadow:0 0 25px #22d3ee'" 
       : "";
@@ -223,7 +231,7 @@ function check(){
 
         ${x.mmc ? `
           <div class="badge" style="background:#0ea5e9;color:black;">
-            💾 ${x.mmc} ${size}
+            💾 ${x.mmc} ${size ? "(" + size + ")" : ""}
           </div>
         ` : ""}
 
@@ -237,13 +245,11 @@ function check(){
   });
 }
 
-/* ENTER KEY */
 q.addEventListener("keydown", function(e){
   if(e.key === "Enter"){
     check();
   }
 });
-
 
 </script>
 
