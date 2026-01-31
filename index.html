@@ -185,6 +185,11 @@ function check(){
     out.innerHTML=`<div class="item notfound">❌ Không xác định mã</div>`;
   }
 }
+q.addEventListener("keydown", function(e){
+  if(e.key === "Enter"){
+    check();
+  }
+});
 
 </script>
 
